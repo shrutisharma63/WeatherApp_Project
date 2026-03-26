@@ -79,7 +79,6 @@ body::before {
 /* Additional dark theme styles for better coverage */
 /* .dark-theme * {
   color: inherit; /* DISABLED - was breaking input text */
-}
 .dark-theme input {
   color: #ffffff !important;
   background: black !important;
