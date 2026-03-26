@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "npm install --legacy-peer-deps && ng-build",
+    "build": "npm install --legacy-peer-deps --no-audit --no-fund && ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
 "serve:ssr:my-angular-weather-app": "node dist/my-angular-weather-app/server/server.mjs",
