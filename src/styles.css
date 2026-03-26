@@ -1,0 +1,129 @@
+/* Global styles and app background */
+
+html, body, app-root { height: 100%; }
+
+/* Ensure app-root and main containers inherit the global background (stronger specificity) */
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; color: #333; }
+app-root, body, html {
+  height: 100%;
+  /* Weather-themed sky gradient - fresh sky blue */
+  background: linear-gradient(180deg, 
+    #87CEEB 0%,    /* Sky blue at top */
+    #E0F6FF 30%,   /* Light sky */
+    #B8E4F9 60%,   /* Soft blue */
+    #87CEEB 100%  /* Sky blue at bottom */
+  ) !important;
+  min-height: 100vh;
+  background-attachment: fixed; /* Ensures gradient covers full page */
+}
+
+/* Subtle animated background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* Dark theme styles - Night sky theme */
+.dark-theme {
+  background: linear-gradient(180deg, 
+    #0a0a1a 0%,     /* Deep night */
+    #1a1a3a 30%,    /* Dark blue */
+    #2d1b4e 60%,    /* Purple night */
+    #1a1a3a 100%   /* Dark blue */
+  ) !important;
+  color: #ffffff;
+  min-height: 100vh;
+  background-attachment: fixed;
+}
+
+.dark-theme .header {
+  background-color: rgba(26, 26, 58, 0.95);
+  color: #ffffff;
+}
+
+.dark-theme .sidebar {
+  background-color: rgba(30, 30, 60, 0.98);
+  color: #ffffff;
+}
+
+.dark-theme .card,
+.dark-theme .mat-card {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+
+.dark-theme .mat-button,
+.dark-theme .mat-raised-button {
+  background-color: #555555;
+  color: #ffffff;
+}
+
+.dark-theme .mat-input-element,
+.dark-theme .mat-form-field {
+  color: #ffffff;
+}
+
+.dark-theme .mat-form-field-label {
+  color: #cccccc;
+}
+
+.dark-theme .mat-form-field-outline {
+  color: #cccccc;
+}
+
+/* Additional dark theme styles for better coverage */
+/* .dark-theme * {
+  color: inherit; /* DISABLED - was breaking input text */
+}
+.dark-theme input {
+  color: #ffffff !important;
+  background: black !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+
+.dark-theme .content {
+  background-color: transparent; /* Let gradient show through */
+  color: #ffffff;
+}
+
+.dark-theme .footer {
+  background-color: rgba(30, 30, 60, 0.95);
+  color: #ffffff;
+}
+
+.dark-theme .search-bar,
+.dark-theme .favourites,
+.dark-theme .profile,
+.dark-theme .settings {
+  background-color: rgba(42, 42, 70, 0.9);
+  color: #ffffff;
+}
+
+.dark-theme .theme-icon {
+  color: #ffffff;
+}
+
+.dark-theme .icon {
+  color: #ffffff;
+}
+
+.dark-theme h1,
+.dark-theme h2,
+.dark-theme h3,
+.dark-theme h4,
+.dark-theme h5,
+.dark-theme h6 {
+  color: #ffffff;
+}
+
+.dark-theme p,
+.dark-theme span,
+.dark-theme div {
+  color: #ffffff;
+}

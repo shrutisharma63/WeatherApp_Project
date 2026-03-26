@@ -1,0 +1,30 @@
+<header class="header">
+  <div class="header-left">
+    <!-- Hamburger Toggle (Click to open/close, hover effect) -->
+    <span
+      class="icon hamburger"
+      (click)="menuService.toggleMenu()"
+      [class.open]="menuService.isMenuOpen()">
+      ☰
+    </span>
+
+    <!-- Weather Logo -->
+    <img src="image.png"
+         alt="Weather App Logo"
+         class="logo"
+         (click)="refreshPage()">
+
+    <!-- App Name -->
+    <h1>Weather</h1>
+  </div>
+
+  <div class="header-right">
+    <span
+      [appTooltip]="'Dark Theme'"
+      (click)="toggleTheme()"
+      class="theme-icon">
+      🌙
+    </span>
+  </div>
+</header>
+

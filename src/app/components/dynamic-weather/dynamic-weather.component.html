@@ -1,0 +1,40 @@
+<div class="dynamic-weather-container">
+  <!-- Hourly Forecast with Rain Overlay -->
+  <div class="hourly-section">
+    <div class="hourly-scroll">
+      <div class="hourly-item" 
+           *ngFor="let hour of hourlyData; let i = index"
+           [class.rainy]="hour.condition === 'rain' || hour.precip > 30"
+           (click)="selectHour(i)">
+        <!-- Rain Overlay - ONLY for rainy conditions -->
+        <div class="rain-overlay" *ngIf="hour.condition === 'rain' || hour.precip > 30">
+          <div class="rain-drop" *ngFor="let drop of [1,2,3,4,5]" [style.animation-delay]="'0.' + (drop * 1) + 's'">
+            <div class="drop"></div>
+          </div>
+        </div>
+        
+        <div class="time">{{hour.time}}</div>
+        <div class="icon" [innerHTML]="getIcon(hour.condition)"></div>
+        <div class="temp">{{hour.temp}}°</div>
+        <div class="precip" *ngIf="hour.precip > 0">💧 {{hour.precip}}%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Temperature Graph -->
+  <div class="graph-section">
+    <div class="chart-container">
+      <canvas #tempChart></canvas>
+    </div>
+  </div>
+
+  <!-- Current Selection Info -->
+  <div class="current-selection">
+    <div class="selected-info">
+      <span class="selected-time">{{selectedHour?.time || 'Now'}}</span>
+      <span class="selected-temp">{{selectedHour?.temp || '82'}}°</span>
+      <span class="selected-condition">{{selectedHour?.condition || 'Clear'}}</span>
+    </div>
+  </div>
+</div>
+

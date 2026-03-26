@@ -1,0 +1,33 @@
+<div class="search-bar">
+  <button 
+    type="button" 
+    class="location-btn" 
+(click)="onLocationClick()"
+    title="Use my location"
+  >
+    📍
+  </button>
+  <input 
+    type="text" 
+    placeholder="Search for a city..." 
+    [(ngModel)]="searchQuery"
+(input)="onSearchInput($event)"
+    (keydown)="onKeyDown($event)"
+  />
+  <div *ngIf="showResults" class="autocomplete-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 1001; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
+    <div *ngFor="let result of searchResults" class="autocomplete-item" (click)="selectResult(result)">
+      {{ result.name }}<br><small>{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</small>
+    </div>
+  </div>
+  <button 
+    *ngIf="searchQuery" 
+    type="button" 
+    class="clear-btn" 
+    (click)="clearSearch()"
+    title="Clear search"
+  >
+    ✕
+  </button>
+  <button type="submit" (click)="onSearch()">Search</button>
+</div>
+

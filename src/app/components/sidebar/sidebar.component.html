@@ -1,0 +1,37 @@
+<!-- Overlay (for background click optional) -->
+<div class="overlay"
+     [class.show]="menuService.isMenuOpen()"
+     (click)="menuService.toggleMenu()">
+</div>
+
+<!-- Side Menu -->
+<div class="menu" [class.expanded]="menuService.isMenuOpen()">
+  <div class="menu-item sidebar" [class.active]="menuService.currentView() === 'forecast'" (click)="menuService.setView('forecast')">
+    <span class="material-icons" aria-hidden="true">wb_cloudy</span>
+    <span>Forecast</span>
+  </div>
+
+  <div class="menu-item sidebar" [class.active]="menuService.currentView() === 'favorite-cities'" (click)="menuService.setView('favorite-cities')">
+    <span class="material-icons" aria-hidden="true">favorite</span>
+    <span>Favourites</span>
+  </div>
+
+  <div class="menu-item sidebar" (click)="menuService.setView('feedback')">
+    <span class="material-icons" aria-hidden="true">feedback</span>
+    <span>Feedback</span>
+  </div>
+
+  <div class="menu-item sidebar settings" (click)="menuService.setView('settings')">
+    <span class="material-icons" aria-hidden="true">settings</span>
+    <span>Settings</span>
+  </div>
+</div>
+
+<!-- Small embedded map to fill sidebar empty space -->
+<div class="sidebar-map" *ngIf="mapSrc">
+  <div class="sidebar-map-header">Nearby map</div>
+  <div class="sidebar-map-wrap">
+    <iframe [src]="mapSrc" class="sidebar-map-iframe" loading="lazy" title="Mini map"></iframe>
+  </div>
+</div>
+

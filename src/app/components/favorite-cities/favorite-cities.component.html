@@ -1,0 +1,68 @@
+
+<div class="favourites-container">
+  <!-- Header Section -->
+  <div class="favourites-header">
+    <h1 class="favourites-title">Favourite Cities</h1>
+  </div>&nbsp;
+
+  <app-search-popup
+    [isOpen]="openPopup()"
+    (closed)="closePopup()"
+    (citySelected)="addSelectedCity($event)">
+  </app-search-popup>
+
+  <!-- Error Message -->
+  <div class="error-toast" *ngIf="error()">
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="favoritesCount() === 0 && !isLoading()">
+    <div class="empty-icon">⭐</div>
+    <h2>No Favorites Yet</h2>
+    <p>Click + to add your first city!</p>
+  </div>
+
+  <!-- City Cards Grid -->
+  <div class="city-cards-grid" *ngIf="favoritesCount() > 0">
+    <div 
+      class="city-card" 
+      *ngFor="let city of favorites()"
+      (click)="viewWeather(city)"
+    >
+      <button class="remove-btn" (click)="removeFromFavorites(city.id); $event.stopPropagation()" title="Remove">
+        <span class="material-icons">close</span>
+      </button>
+      <div class="card-top-row">
+        <div class="city-info">
+          <h3 class="city-name">{{ city.name }}</h3>
+          <span class="city-country">{{ city.country }}</span>
+        </div>
+        <div class="temperature-display">
+          <span class="temperature-value">{{ formatTemperature(city.temperature) }}</span>
+        </div>
+      </div>
+      <div class="weather-icon-bottom">
+        <span class="weather-emoji" *ngIf="!isCityLoading(city.id)">
+          {{ getWeatherIcon(city.weatherCode) }}
+        </span>
+        <div class="loading-spinner-small" *ngIf="isCityLoading(city.id)"></div>
+      </div>
+      <div class="card-glow"></div>
+    </div>
+        <div class="city-add-card" (click)="openpopup()" title="Add Favourites">
+      <div class="add-placeholder">
+        <span class="material-icons add-icon-large">add</span>
+        <p>Add New City</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Loading State -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <div class="loading-spinner"></div>
+    <p>Loading your favorites...</p>
+  </div>
+</div>
+

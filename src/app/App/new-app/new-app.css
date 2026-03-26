@@ -1,0 +1,62 @@
+/* Perfect blue theme tab backgrounds */
+.weather-tab, .favorites-tab, .feedback-tab, .settings-tab {
+  min-height: 80vh;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-tab {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 40%, #1d4ed8 100%);
+}
+
+.favorites-tab {
+  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #6366f1 100%);
+}
+
+.profile-tab {
+  background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 100%);
+}
+
+.settings-tab {
+  background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 40%, #818cf8 100%);
+}
+
+/* Dark theme - matching blue shades */
+.dark-theme .weather-tab {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 40%, #1e1b4b 100%);
+}
+
+.dark-theme .favorites-tab {
+  background: linear-gradient(135deg, #3730a3 0%, #312e81 40%, #1e1b4b 100%);
+}
+
+.dark-theme .profile-tab {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 40%, #1e1b4b 100%);
+}
+
+.dark-theme .settings-tab {
+  background: linear-gradient(135deg, #3730a3 0%, #312e81 40%, #1e1b4b 100%);
+}
+
+/* Subtle shine effect */
+.weather-tab::before, .favorites-tab::before, .profile-tab::before, .settings-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.7s;
+}
+
+.weather-tab:hover::before, .favorites-tab:hover::before, .profile-tab:hover::before, .settings-tab:hover::before {
+  left: 100%;
+}
+
+

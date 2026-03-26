@@ -1,0 +1,191 @@
+<div class="weather-container" *ngIf="weatherService.currentWeather() as weather">
+  
+  <!-- Current Weather -->
+  <div class="current-weather">
+    <div class="location">
+      <h2>{{ weather.location }}</h2>
+    </div>
+    
+    <div class="weather-main">
+      <div class="weather-icon">
+        {{ getWeatherIcon(weather.current.weatherCode) }}
+      </div>
+      <div class="temperature">
+        {{ weather.current.temperature }}°C
+      </div>
+      <div class="description">
+        {{ getWeatherDescription(weather.current.weatherCode) }}
+      </div>
+    </div>
+
+    <div class="weather-details">
+      <div class="detail-item">
+        <span class="detail-label">Feels Like</span>
+        <span class="detail-value">{{ weather.current.feelsLike }}°C</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Humidity</span>
+        <span class="detail-value">{{ weather.current.humidity }}%</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Wind</span>
+        <span class="detail-value">{{ weather.current.windSpeed }} km/h</span>
+      </div>
+    </div>
+
+    <!-- Additional Weather Details -->
+    <div class="transparent-weather-box">
+      <div class="transparent-detail">
+        <span class="transparent-icon">🌙</span>
+        <span class="transparent-label">UV Index</span>
+        <span class="transparent-value">{{ weather.current.uvIndex || 0 }}</span>
+      </div>
+      <div class="transparent-detail">
+        <span class="transparent-icon">🌡️</span>
+        <span class="transparent-label">Pressure</span>
+        <span class="transparent-value">{{ weather.current.pressure || 0 }} hPa</span>
+      </div>
+      <div class="transparent-detail">
+        <span class="transparent-icon">👁️</span>
+        <span class="transparent-label">Visibility</span>
+        <span class="transparent-value">{{ weather.current.visibility || 0 }} km</span>
+      </div>
+      <div class="transparent-detail">
+        <span class="transparent-icon">🌧️</span>
+        <span class="transparent-label">Precipitation</span>
+        <span class="transparent-value">{{ weather.current.precipitation || 0 }} mm</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unified Dashboard Grid -->
+  <div class="dashboard-grid">
+    
+    <!-- Row 1: Map + Temperature Chart -->
+    <div class="dashboard-row-map-charts" *ngIf="isBrowser">
+      <!-- Map -->
+      <div class="map-container" *ngIf="mapSrc && weather.current && weather.current.weatherCode !== undefined && weather.current.weatherCode !== null">
+        <h3>Location Map</h3>
+        <div class="map-wrapper">
+          <iframe [src]="mapSrc" class="map-iframe" loading="lazy" title="Location map"></iframe>
+        </div>
+      </div>
+
+      <!-- Temperature Chart -->
+      <div class="chart-card" style="margin-top: 20px;">
+        <h3>7-Day Temperature</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="temperatureChartData"
+            [options]="temperatureChartOptions"
+            type="line"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: All 4 Charts -->
+    <div class="charts-section" style="margin-top: 120px;" *ngIf="isBrowser">
+      <!-- Rain Chance Chart -->
+      <div class="chart-card">
+        <h3>Rain Chance</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="precipitationChartData"
+            [options]="precipitationChartOptions"
+            type="bar"></canvas>
+        </div>
+      </div>
+
+      <!-- Humidity Chart -->
+      <div class="chart-card">
+        <h3>Humidity</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="humidityChartData"
+            [options]="humidityChartOptions"
+            type="line"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Trend Chart -->
+      <div class="chart-card">
+        <h3>30-Day Temperature Trend</h3>
+        <div class="chart-wrapper">
+          <canvas baseChart
+            [data]="monthlyTempChartData"
+            [options]="monthlyTempChartOptions"
+            type="line"></canvas>
+        </div>
+      </div>
+
+      <!-- Additional Stats Card -->
+      <div class="chart-card">
+        <h3>Weather Stats</h3>
+        <div class="chart-wrapper" style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px;">
+          <div style="text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 700; color: #38bdf8;">{{ weather.current.humidity }}%</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">Humidity</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: 700; color: #f97316;">{{ weather.current.windSpeed }}</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">km/h Wind</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: 7-Day Forecast -->
+    <div class="forecast">
+      <h3>7-Day Forecast</h3>
+      <div class="forecast-grid">
+        <div class="forecast-day" *ngFor="let day of weather.forecast.slice(0, 7)">
+          <div class="day-name">{{ formatDate(day.date) }}</div>
+          <div class="day-icon">{{ getWeatherIcon(day.weatherCode) }}</div>
+          <div class="day-temp">
+            <span class="temp-high">{{ day.temperatureMax }}°</span>
+            <span class="temp-low">{{ day.temperatureMin }}°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: 30-Day Overview -->
+    <div class="monthly-forecast" *ngIf="monthlyForecast.length">
+      <h3>30-Day Overview</h3>
+      <div class="monthly-grid">
+        <div class="month-day" *ngFor="let day of monthlyForecast">
+          <div class="month-info">
+            <span class="month-name">{{ getMonthName(day.date) }}</span>
+            <span class="day-number">{{ getDayNumber(day.date) }}</span>
+            <span class="day-name">{{ getDayName(day.date) }}</span>
+          </div>
+          <div class="icon">{{ getWeatherIcon(day.weatherCode) }}</div>
+          <div class="temps">
+            <span class="temp-high">{{ day.temperatureMax }}°</span>
+            <span class="temp-low">{{ day.temperatureMin }}°</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Premium Modern Hourly Dashboard -->
+    <app-modern-weather-dashboard></app-modern-weather-dashboard>
+
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading" *ngIf="weatherService.isLoading()">
+<div class="loading-spinner">
+  <div class="pulse"></div>
+</div>
+  <p>Loading weather data...</p>
+</div>
+
+
+<!-- Error State -->
+<div class="error" *ngIf="weatherService.error() as errorMessage">
+  <p class="error-message">{{ errorMessage }}</p>
+</div>
+
+

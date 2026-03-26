@@ -1,0 +1,118 @@
+.header {
+  background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%);
+  color: white;
+  padding: 0.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1003; /* above overlay */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* Dark theme for header */
+::ng-deep .dark-theme .header {
+  background: linear-gradient(180deg, #1a1a3a 0%, #2d1b4e 100%);
+  color: #ffffff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+/* Logo */
+.logo {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  margin: 0 10px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* Title */
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Icons */
+.icon {
+  font-size: 1.6rem;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.hamburger { 
+  display: inline-block; 
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hamburger.open {
+  transform: rotate(90deg);
+}
+
+.hamburger:hover {
+  transform: scale(1.1);
+}
+
+.theme-icon {
+  color: yellow;
+  font-size: 2rem;
+  margin-right: 30px;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.theme-icon:hover {
+  cursor: pointer;
+}
+
+/* Tooltip styles */
+.theme-icon .custom-tooltip {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-right: 5px;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    display: none;
+  }
+  .logo {
+    margin: 0 5px;
+  }
+  .header {
+    padding: 0.5rem 1rem;
+  }
+}

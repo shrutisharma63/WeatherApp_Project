@@ -1,0 +1,39 @@
+<div class="feedback-container">
+  <div class="feedback-header">
+    <div class="feedback-icon">💬</div>
+    <h1>Send Feedback</h1>
+    <p>Help us improve the weather app!</p>
+  </div>
+
+  <div class="feedback-form-card">
+    <textarea 
+      [ngModel]="feedback()"
+      (ngModelChange)="feedback.set($event)"
+      placeholder="Tell us what you love or what we can improve..."
+      rows="6"
+      [disabled]="isSubmitting()"
+      class="feedback-textarea">
+    </textarea>
+    
+    <div class="form-actions">
+      <button 
+        class="submit-btn"
+        (click)="submitFeedback()"
+        [disabled]="!feedback().trim() || isSubmitting()">
+        <span *ngIf="!isSubmitting()">Send Feedback</span>
+        <span *ngIf="isSubmitting()">Sending...</span>
+      </button>
+      <div class="char-count">{{ feedback().length }}/500</div>
+    </div>
+  </div>
+
+  <div class="recent-feedback" *ngIf="submittedFeedbacks().length">
+    <h3>Recent Feedback</h3>
+    <div class="feedback-list">
+      <div *ngFor="let fb of submittedFeedbacks() | slice:0:3" class="feedback-item">
+        <div class="fb-timestamp">{{ fb.timestamp | date:'short' }}</div>
+        <p>{{ fb.message }}</p>
+      </div>
+    </div>
+  </div>
+</div>

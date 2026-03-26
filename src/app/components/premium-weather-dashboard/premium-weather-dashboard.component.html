@@ -1,0 +1,62 @@
+
+<div class="premium-dashboard">
+  <!-- Header with current weather -->
+  <div class="dashboard-header">
+    <div class="current-weather-card">
+      <div class="current-location">
+        <h1>{{ currentLocation }}</h1>
+        <div class="current-time">{{ currentTime }}</div>
+      </div>
+      <div class="current-main">
+        <div class="current-icon">🌤️</div>
+        <div class="current-temp">24°</div>
+        <div class="current-description">Partly Cloudy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hourly Timeline -->
+  <div class="hourly-timeline">
+    <div class="hourly-scroll-container">
+      <div class="hourly-highlight-column" [style.left.%]="highlightPosition"></div>
+<div class="hourly-item" *ngFor="let hour of hourlyForecast; let i = index"
+           [class.selected]="i === selectedHour"
+           (click)="selectHour(i)">
+        <div class="hour-time">{{hour.time}}</div>
+        <div class="hour-icon">{{hour.icon}}</div>
+        <div class="hour-temp">{{hour.temp}}°</div>
+        <div class="hour-precip" *ngIf="hour.precip > 0">{{hour.precip}}%</div>
+        <!-- Rain Overlay -->
+
+
+        <div class="rain-container" *ngIf="hour.precip > 25">
+          <div class="rain-drop drop1"></div>
+          <div class="rain-drop drop2"></div>
+          <div class="rain-drop drop3"></div>
+          <div class="rain-drop drop4"></div>
+          <div class="rain-drop drop5"></div>
+          <div class="rain-drop drop6"></div>
+          <div class="rain-drop drop7"></div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Temperature Graph -->
+  <div class="graph-container">
+    <canvas #tempGraph></canvas>
+  </div>
+
+  <!-- Rain Probability Row -->
+  <div class="precip-row">
+    <div class="precip-label">Rain Chance</div>
+    <div class="precip-scroll">
+      <div class="precip-item" *ngFor="let hour of hourlyForecast">
+        {{hour.precip > 0 ? hour.precip + '%' : ''}}
+      </div>
+    </div>
+  </div>
+</div>
+

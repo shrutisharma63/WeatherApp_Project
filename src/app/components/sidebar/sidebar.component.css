@@ -1,0 +1,410 @@
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+
+.overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Always visible narrow sidebar with icons */
+.menu {
+  position: fixed;
+  top: 50px; /* below header */
+  left: 0;
+  width: 72px;
+  min-width: 72px;
+  height: calc(100vh - 60px);
+  background: linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
+  color: #000000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1002;
+  padding: 0 8px 12px 8px; /* zero top padding */
+  box-shadow: 2px 0 18px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+
+
+.sidebar-icons-section:hover {
+  box-shadow: 
+    inset 4px 0 0 #2563eb,
+    0 8px 32px rgba(59, 130, 246, 0.4);
+  transform: translateX(2px);
+}
+
+.menu.expanded {
+  width: 280px;
+  padding-right: 24px;
+  overflow: visible;
+}
+
+/* Dark theme for sidebar */
+body.dark-theme .menu {
+  background: linear-gradient(180deg, #1a1a3a 0%, #2d1b4e 100%);
+  color: #ffffff;
+}
+
+.menu.open {
+  transform: translateX(0);
+}
+
+/* Menu items */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 12px; /* no gap between icons */
+  margin: 0; /* zero margin between icons */
+  cursor: pointer;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  top: 10px;
+}
+
+.menu-item .material-icons {
+  flex-shrink: 0;
+  margin-right: 0;
+  transition: all 0.3s ease;
+}
+
+.menu-item span:last-child {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 12px;
+}
+
+.menu.expanded .menu-item span:last-child {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Sidebar map block */
+.sidebar-map {
+  position: fixed;
+  left: 0;
+  bottom: 24px;
+  width: 240px;
+  padding: 12px;
+  box-sizing: border-box;
+  z-index: 1001;
+}
+.sidebar-map-header {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 8px;
+  padding-left: 6px;
+}
+.sidebar-map-wrap {
+  width: 100%;
+  height: 150px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+.sidebar-map-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* LEFT COLOR BAR */
+.menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+/* Active state - thin blue indicator on left */
+.menu-item.active::before {
+  opacity: 1;
+  background: #3b82f6; /* blue border for active */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.menu-item.active {
+  background: #f5f9ff;
+  color: #1976d2;
+}
+
+.menu-item.active .material-icons {
+  background: #1976d2;
+  color: white;
+}
+
+/* HOVER EFFECT (common) */
+.menu-item:hover {
+  background: #f5f9ff;
+  transform: translateX(6px);
+  color: black;
+}
+
+/* Show left bar on hover */
+.menu-item:hover::before {
+  opacity: 1;
+}
+
+/* sidebar */
+.menu-item.sidebar:hover {
+  color: #1976d2;
+}
+.menu-item.sidebar:hover::before {
+  background: #1976d2;
+  color: black;
+}
+
+/* Style material icon used for Settings to match common website look */
+.menu-item.settings .material-icons {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.03);
+  color: #4b5563;
+  margin-right: 8px;
+  transition: all 0.25s ease;
+}
+.menu-item.settings:hover .material-icons {
+  background: #1976d2;
+  color: white;
+}
+
+/* Dark theme styles for settings icons */
+body.dark-theme .menu-item.settings .material-icons {
+  background: rgba(255, 255, 255, 0.05);
+  color: #b0b0b0;
+}
+
+body.dark-theme .menu-item.settings:hover .material-icons {
+  background: #2196f3;
+  color: #ffffff;
+}
+
+.menu-item .material-icons {
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.12);
+  color: #1e40af;
+  font-weight: 500;
+  margin-right: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 12px rgba(59,130,246,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+/* Generic material icon styling for sidebar items */
+.menu-item .material-icons {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.06);
+  color: #374151;
+  margin-right: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.menu-item:hover .material-icons {
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  color: white;
+  box-shadow: 
+    0 8px 24px rgba(59,130,246,0.5),
+    0 0 0 3px rgba(59,130,246,0.3);
+  transform: scale(1.08) translateY(-1px);
+}
+
+/* Dark theme styles for material icons */
+body.dark-theme .menu-item .material-icons {
+  background: rgba(59,130,246,0.2);
+  color: #60a5fa;
+  box-shadow: 
+    0 4px 12px rgba(59,130,246,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+body.dark-theme .menu-item:hover .material-icons {
+  background: #2196f3;
+  color: #ffffff;
+}
+
+/* Dark theme hover adjustments */
+.dark-theme .menu-item:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.dark-theme .menu-item.sidebar:hover {
+  color: #64b5f6;
+}
+.dark-theme .menu-item.sidebar:hover::before {
+  background: #64b5f6;
+}
+
+/* Dark theme active state */
+body.dark-theme .menu-item.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #64b5f6;
+}
+
+body.dark-theme .menu-item.active::before {
+  background: #64b5f6;
+}
+
+body.dark-theme .menu-item.active .material-icons {
+  background: #64b5f6;
+  color: #1a1a3a;
+}
+
+.material-icons, mat-icon {
+  font-size: 20px;
+  color: #666;
+  transition: color 0.25s ease;
+}
+
+.menu-item mat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Menu icon styling - using text for home icon */
+.menu-icon {
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #4b5563;
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* Dark theme icon color */
+body.dark-theme .menu-icon {
+  color: #b0b0b0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure icon color changes on hover */
+.menu-item:hover .menu-icon {
+  color: white;
+  background: #1976d2;
+}
+
+.dark-theme .menu-item:hover .menu-icon {
+  color: #ffffff;
+  background: #2196f3;
+}
+
+/* Settings icon tweaks */
+.settings-icon svg {
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+.menu-item.settings:hover .settings-icon {
+  background: #1976d2;
+  color: white;
+}
+
+.dark-theme .menu-item.settings:hover .settings-icon {
+  background: #2196f3;
+  color: white;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .menu {
+    width: 100%;
+    max-width: 300px;
+    padding: 20px 10px;
+  }
+  
+  .menu-item {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .menu-item .material-icons {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  
+  .sidebar-map {
+    width: 100%;
+    max-width: 300px;
+    bottom: 20px;
+  }
+  
+  .sidebar-map-wrap {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .menu {
+    width: 85%;
+    max-width: none;
+    padding: 16px 8px;
+  }
+  
+  .menu-item {
+    padding: 10px 12px;
+    font-size: 13px;
+    gap: 10px;
+  }
+  
+  .menu-item .material-icons {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  
+  .menu-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  
+  .sidebar-map {
+    display: none;
+  }
+}

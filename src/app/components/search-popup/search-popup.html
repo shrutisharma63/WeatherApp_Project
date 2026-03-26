@@ -1,0 +1,44 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onOverlayClick()">
+	<div class="add-search-modal" (click)="$event.stopPropagation()">
+		<div class="modal-header">
+			<div>
+				<h3>Add to Favourites</h3>
+			</div>
+			<button class="modal-close" (click)="close()">&times;</button>
+		</div>
+
+		<div class="add-search-input-group">
+			<div class="input-row">
+				<span class="material-icons input-icon">travel_explore</span>
+			<input
+				[ngModel]="addSearchQuery"
+				(ngModelChange)="onSearchQueryChange($event)"
+				(keyup.enter)="performAddSearch()"
+				placeholder="Search"
+				class="add-search-input"
+			/>
+			</div>
+
+			<div *ngIf="searchResults.length > 0" class="search-results-list">
+				<div
+					class="search-result-item"
+					*ngFor="let result of searchResults"
+					(click)="selectCityForAdd(result)">
+					<span class="material-icons city-pin">location_on</span>
+					<div>
+						<div class="search-result-name">{{ result.name }}</div>
+						<div class="search-result-subtitle">{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</div>
+					</div>
+				</div>
+			</div>
+
+			<div *ngIf="pendingAdd" class="searching-indicator">
+				Searching cities...
+			</div>
+
+			<div *ngIf="!pendingAdd && hasSearched && searchResults.length === 0" class="no-results">
+				No matching city found. Try another spelling.
+			</div>
+		</div>
+	</div>
+</div>

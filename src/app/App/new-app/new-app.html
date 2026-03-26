@@ -1,0 +1,31 @@
+<app-header></app-header>
+<app-sidebar></app-sidebar>
+<main class="content">
+  <!-- Forecast Tab (Default) -->
+  <div *ngIf="menuService.currentView() === 'forecast'" class="weather-tab">
+    <div class="weather-view">
+
+
+      <app-search-bar></app-search-bar>
+      <app-weather-display></app-weather-display>
+    </div>
+
+
+  </div>
+  
+  <!-- Favourites Tab - NEW STYLE -->
+  <div *ngIf="menuService.currentView() === 'favorite-cities'" class="favorites-tab">
+    <app-favorite-cities></app-favorite-cities>
+  </div>
+  
+  <!-- Feedback Tab -->
+  <div *ngIf="menuService.currentView() === 'feedback'" class="feedback-tab">
+    <app-feedback></app-feedback>
+  </div>
+  
+  <!-- Settings Tab -->
+  <div *ngIf="menuService.currentView() === 'settings'" class="settings-tab">
+    <app-settings></app-settings>
+  </div>
+</main>
+

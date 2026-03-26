@@ -1,0 +1,366 @@
+/* Settings Container */
+.settings-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ================= TABS ================= */
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  margin-bottom: 24px;
+background: rgba(20, 20, 35, 0.9);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(50, 50, 70, 0.5);
+}
+
+.tab {
+  padding: 12px 24px;
+  cursor: pointer;
+  position: relative;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.tab:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab.active {
+  color: #fff;
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: #3b82f6;
+  border-radius: 3px;
+}
+
+/* ================= TAB CONTENT ================= */
+.tab-content {
+  margin-top: 24px;
+  padding: 32px;
+background: rgba(17, 17, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(45, 45, 65, 0.8);
+}
+
+/* ================= SETTING ================= */
+.setting {
+  margin-bottom: 32px;
+}
+
+.setting:last-child {
+  margin-bottom: 0;
+}
+
+.setting-label {
+  display: block;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.setting-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ================= RADIO GROUP ================= */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 14px 18px;
+background: rgba(30, 30, 50, 0.7);
+  border-radius: 10px;
+  border: 1px solid rgba(60, 60, 80, 0.6);
+  transition: all 0.2s ease;
+}
+
+.radio-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.radio-input {
+  display: none;
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radio-input:checked + .radio-custom {
+  border-color: #3b82f6;
+}
+
+.radio-input:checked + .radio-custom::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #3b82f6;
+  border-radius: 50%;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.radio-label svg {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ================= TOGGLE GROUP ================= */
+.toggle-group {
+  display: flex;
+  gap: 12px;
+}
+
+.toggle-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 14px 20px;
+background: rgba(28, 28, 45, 0.8);
+  border-radius: 10px;
+  border: 1px solid rgba(55, 55, 75, 0.7);
+  transition: all 0.2s ease;
+}
+
+.toggle-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-option.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-label {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toggle-option.active .toggle-label {
+  color: #fff;
+}
+
+/* ================= INPUT ================= */
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+.text-input {
+  width: 100%;
+  padding: 14px 14px 14px 44px;
+background: rgba(30, 30, 50, 0.7);
+  border: 1px solid rgba(60, 60, 80, 0.6);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.text-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.text-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ================= ABOUT SECTION ================= */
+.about-section {
+  text-align: center;
+}
+
+.about-section h3 {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.about-section .version {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.about-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tech-stack {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tech-badge {
+  padding: 6px 14px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ================= TERMS SECTION ================= */
+.terms-section h3 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.terms-section p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.terms-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.terms-list li {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  padding: 10px 0;
+  padding-left: 24px;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.terms-list li::before {
+  content: "•";
+  position: absolute;
+  left: 8px;
+  color: #3b82f6;
+}
+
+.terms-updated {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+}
+
+/* Dark theme improvements integrated into base styles */
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 640px) {
+  .settings-container {
+    padding: 16px;
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+
+  .toggle-group {
+    flex-direction: column;
+  }
+
+  .radio-group {
+    gap: 10px;
+  }
+
+  .radio-option {
+    padding: 12px 14px;
+  }
+}
+

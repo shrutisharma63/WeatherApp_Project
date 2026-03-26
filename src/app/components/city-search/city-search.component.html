@@ -1,0 +1,33 @@
+<div class="search-bar">
+  <button 
+    type="button" 
+    class="location-btn" 
+(click)="onLocationClick()"
+    title="Use my location"
+  >
+    📍
+  </button>
+  <input 
+    type="text" 
+    placeholder="Search for a city..." 
+    [(ngModel)]="searchQuery"
+    (keydown)="onKeyDown($event)"
+  />
+  <button 
+    *ngIf="searchQuery" 
+    type="button" 
+    class="clear-btn" 
+    (click)="clearSearch()"
+    title="Clear search"
+  >
+    ✕
+  </button>
+  <button type="submit" (click)="onSearch()">Search</button>
+  <button 
+    *ngIf="weatherService.currentWeather()"
+    class="favorite-btn" 
+    (click)="addToFavorites()"
+    title="Add to favorites">
+    ❤️
+  </button>
+</div>

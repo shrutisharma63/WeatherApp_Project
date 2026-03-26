@@ -1,0 +1,173 @@
+<!-- Settings Container -->
+<div class="settings-container">
+  
+  <!-- ================= TABS ================= -->
+  <div class="tabs">
+    <div 
+      class="tab" 
+      [class.active]="selectedTab === 'general'"
+      (click)="selectTab('general')">
+      General
+    </div>
+    <div 
+      class="tab" 
+      [class.active]="selectedTab === 'about'"
+      (click)="selectTab('about')">
+      About
+    </div>
+    <div 
+      class="tab" 
+      [class.active]="selectedTab === 'terms'"
+      (click)="selectTab('terms')">
+      Terms of Use
+    </div>
+  </div>
+
+  <!-- ================= GENERAL TAB ================= -->
+  @if(selectedTab === 'general') {
+    <div class="tab-content" [formGroup]="settingsForm">
+      
+      <!-- THEME MODE SELECTION -->
+      <div class="setting">
+        <label class="setting-label">Theme Mode</label>
+        <p class="setting-description">Choose your preferred color theme</p>
+        
+        <div class="radio-group">
+          <label class="radio-option">
+            <input 
+              type="radio" 
+              formControlName="themeMode" 
+              value="light"
+              class="radio-input">
+            <span class="radio-custom"></span>
+            <span class="radio-label">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Light
+            </span>
+          </label>
+
+          <label class="radio-option">
+            <input 
+              type="radio" 
+              formControlName="themeMode" 
+              value="dark"
+              class="radio-input">
+            <span class="radio-custom"></span>
+            <span class="radio-label">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+              Dark
+            </span>
+          </label>
+
+          <label class="radio-option">
+            <input 
+              type="radio" 
+              formControlName="themeMode" 
+              value="system"
+              class="radio-input">
+            <span class="radio-custom"></span>
+            <span class="radio-label">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              System Default
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- TEMPERATURE UNIT SELECTION -->
+      <div class="setting">
+        <label class="setting-label">Temperature Unit</label>
+        <p class="setting-description">Display temperature in your preferred unit</p>
+        
+        <div class="toggle-group">
+          <label class="toggle-option" [class.active]="settingsForm.get('temperatureUnit')?.value === 'celsius'">
+            <input 
+              type="radio" 
+              formControlName="temperatureUnit" 
+              value="celsius"
+              class="toggle-input">
+            <span class="toggle-label">°C Celsius</span>
+          </label>
+
+          <label class="toggle-option" [class.active]="settingsForm.get('temperatureUnit')?.value === 'fahrenheit'">
+            <input 
+              type="radio" 
+              formControlName="temperatureUnit" 
+              value="fahrenheit"
+              class="toggle-input">
+            <span class="toggle-label">°F Fahrenheit</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- DEFAULT LOCATION SEARCH -->
+      <div class="setting">
+        <label class="setting-label" for="defaultLocation">Default Location</label>
+        <p class="setting-description">Set your default city for weather updates</p>
+        
+        <div class="input-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" class="input-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <input 
+            type="text" 
+            id="defaultLocation"
+            formControlName="defaultLocation"
+            placeholder="Enter city name..."
+            class="text-input"
+            autocomplete="off">
+        </div>
+        <p class="input-hint">Enter a city name to set as your default location</p>
+      </div>
+
+    </div>
+  }
+
+  <!-- ================= ABOUT TAB ================= -->
+  @if(selectedTab === 'about') {
+    <div class="tab-content">
+      <div class="about-section">
+        <h3>Weather App</h3>
+        <p class="version">Version 1.0.0</p>
+        <p class="about-description">
+          A modern weather application built with Angular 17+ and Tailwind CSS.
+          Provides real-time weather data, forecasts, and beautiful visualizations.
+        </p>
+        <div class="tech-stack">
+          <span class="tech-badge">Angular 17</span>
+          <span class="tech-badge">Tailwind CSS</span>
+          <span class="tech-badge">TypeScript</span>
+          <span class="tech-badge">RxJS</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ================= TERMS TAB ================= -->
+  @if(selectedTab === 'terms') {
+    <div class="tab-content">
+      <div class="terms-section">
+        <h3>Terms of Use</h3>
+        <p>
+          By using this application, you agree to the following terms:
+        </p>
+        <ul class="terms-list">
+          <li>This application provides weather data for informational purposes only.</li>
+          <li>We are not responsible for any decisions made based on weather information.</li>
+          <li>Weather data is provided by Open-Meteo API and may not be accurate at all times.</li>
+          <li>You agree to use this application in accordance with applicable laws and regulations.</li>
+        </ul>
+        <p class="terms-updated">Last updated: January 2025</p>
+      </div>
+    </div>
+  }
+
+</div>
+

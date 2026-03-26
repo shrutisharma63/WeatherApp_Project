@@ -1,0 +1,186 @@
+.search-bar {
+  display: flex;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto 4rem auto;
+  position: relative;
+  /* Removed sticky - prevents overlap with forecast */
+  z-index: 1;
+  background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 3%;
+}
+
+.search-bar .location-btn {
+  padding: 0.75rem;
+  background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-bar .location-btn:hover {
+  background: linear-gradient(180deg, #357abd 0%, #2a5f9e 100%);
+}
+
+.search-bar .location-btn:active {
+  background-color: #545b62;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-size: 1rem;
+  min-width: 0;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.search-bar .clear-btn {
+  padding: 0.75rem;
+  background-color: #e9ecef;
+  color: #6c757d;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-bar .clear-btn:hover {
+  background-color: #dee2e6;
+  color: #343a40;
+}
+
+.search-bar button[type="submit"] {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%);
+  color: white;
+  border: none;
+  border-left: none;
+  border-radius: 0 0 0 0;
+  cursor: pointer;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.search-bar button[type="submit"]:hover {
+  background: linear-gradient(180deg, #357abd 0%, #2a5f9e 100%);
+}
+
+.search-bar button[type="submit"]:active {
+  background: linear-gradient(180deg, #2a5f9e 0%, #1e4a7a 100%);
+}
+
+.search-bar .favorite-btn {
+  padding: 0.75rem;
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.search-bar .favorite-btn:hover {
+  background: linear-gradient(180deg, #ee5a24 0%, #dd4b39 100%);
+  transform: scale(1.05);
+}
+
+.search-bar .favorite-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .search-bar {
+    max-width: 100%;
+    margin-bottom: 3rem;
+  }
+  
+  .search-bar .location-btn {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+  
+  .search-bar input {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-bar .clear-btn {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-bar button[type="submit"] {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-bar .favorite-btn {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+}
+
+/* Dark theme for search bar */
+body.dark-theme .search-bar {
+  background: linear-gradient(180deg, #1a1a3a 0%, #2d1b4e 100%);
+}
+
+body.dark-theme .search-bar input,
+body.dark-theme .search-bar input:focus,
+body.dark-theme .search-bar input::placeholder {
+  background: #000000 !important;
+  border-color: #ffff00 !important;
+  color: #ffff00 !important;
+  -webkit-text-fill-color: #ffff00 !important;
+  caret-color: #ff0000 !important;
+  text-shadow: 0 0 10px #ffff00 !important;
+  font-weight: bold !important;
+  font-size: 20px !important;
+}
+
+body.dark-theme .search-bar input::placeholder {
+  color: #aaa;
+}
+
+body.dark-theme .search-bar .clear-btn {
+  background-color: #3a3a4e;
+  color: #aaa;
+  border-color: #555;
+}
+
+body.dark-theme .search-bar .clear-btn:hover {
+  background-color: #4a4a5e;
+  color: #fff;
+}
+
+body.dark-theme .search-bar .favorite-btn {
+  background: linear-gradient(180deg, #ff4757 0%, #c44569 100%);
+}
+
+body.dark-theme .search-bar .favorite-btn:hover {
+  background: linear-gradient(180deg, #ff3742 0%, #b83b5e 100%);
+}
+
