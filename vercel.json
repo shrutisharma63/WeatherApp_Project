@@ -1,8 +1,9 @@
 {
-  "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/my-angular-weather-app/browser",
   "routes": [
-    {"src": "/(.*)", "dest": "/index.html"}
+    {"src": "/assets/(.*)", "dest": "/assets/$1"},
+    {"src": "/((?!index.html$).*)", "dest": "/index.html"}
   ]
 }
