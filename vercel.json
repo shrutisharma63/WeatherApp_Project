@@ -1,9 +1,8 @@
 {
-  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/my-angular-weather-app",
+  "installCommand": "npm install --legacy-peer-deps",
+  "outputDirectory": "dist/my-angular-weather-app/browser",
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {"src": "/(.*)", "dest": "/index.html"}
   ]
 }
