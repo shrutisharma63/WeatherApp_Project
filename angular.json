@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "my-angular-mysoundappclone": {
+    "my-angular-weather-app": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -67,10 +67,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "my-angular-mysoundappclone:build:production"
+              "buildTarget": "my-angular-weather-app:build:production"
             },
             "development": {
-              "buildTarget": "my-angular-mysoundappclone:build:development"
+              "buildTarget": "my-angular-weather-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -100,4 +100,3 @@
     "analytics": "e8bd9c8b-aa97-42e4-86fe-5d74305a03b0"
   }
 }
-

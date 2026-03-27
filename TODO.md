@@ -1,11 +1,12 @@
-# Scroll Fix - Data Not Showing on Scroll
+# Vercel Deployment TODO
 
-## Progress
-- [x] Create TODO.md
-- [x] Edit app.css layout (removed height:100vh/overflow locks from app-container/html/body, sidebar overflow-y:auto, main-content padding-top/bottom)
-- [x] Edit weather-display CSS (removed overflow:hidden from current-weather)
-- [ ] Review new-app.css (no critical scroll issues)
-- [ ] Test scroll behavior (`ng serve` + browser test)
-- [ ] Complete
+## Status: In Progress
 
-**Goal:** Fix CSS layout conflicts causing weather data to disappear when scrolling.
+- [x] 1. Create this TODO.md ✅
+- [ ] 2. Edit angular.json: Fix project name to "my-angular-weather-app"
+- [ ] 3. Edit vercel.json: Update outputDirectory to "dist/my-angular-weather-app"
+- [ ] 4. Test local build: Run `npm run build` and verify dist/my-angular-weather-app
+- [ ] 5. Git init, add files, commit
+- [ ] 6. Create GitHub repo and push
+- [ ] 7. Deploy on Vercel via Git import
+- [ ] 8. Test live site and complete
