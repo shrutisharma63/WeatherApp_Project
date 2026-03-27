@@ -1,7 +1,7 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/my-angular-mysoundappclone",
+  "outputDirectory": "dist/weather-app",
   "routes": [
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
