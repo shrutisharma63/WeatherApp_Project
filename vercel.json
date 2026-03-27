@@ -3,7 +3,21 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/my-angular-weather-app/browser",
   "routes": [
-    {"src": "/assets/(.*)", "dest": "/assets/$1"},
-    {"src": "/((?!index.html$).*)", "dest": "/index.html"}
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/main-[^/]*\\.js",
+      "dest": "/main-[^/]*\\.js"
+    },
+    {
+      "src": "/styles-[^/]*\\.css",
+      "dest": "/styles-[^/]*\\.css"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
