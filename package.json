@@ -8,8 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
 "serve:ssr:my-angular-weather-app": "node dist/my-angular-weather-app/server/server.mjs",
-"build:ssr": "ng run my-angular-weather-app:prerender",
-    "vercel-build": "npm install --legacy-peer-deps && npm run build:ssr"
+"vercel-build": "npm install --legacy-peer-deps && ng build --configuration production"
   },
   "prettier": {
     "printWidth": 100,
