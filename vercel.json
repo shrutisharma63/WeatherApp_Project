@@ -4,7 +4,6 @@
   "outputDirectory": "dist/my-angular-weather-app/browser",
   "routes": [
     {
-      "handle": "filesystem",
       "src": "/(.*)",
       "dest": "/index.html"
     }
