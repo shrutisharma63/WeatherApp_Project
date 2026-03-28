@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist/my-angular-weather-app/browser",
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "dist/my-angular-weather-app",
   "routes": [
     {
       "src": "/(.*)",

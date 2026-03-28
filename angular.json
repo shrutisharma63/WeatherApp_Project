@@ -63,6 +63,29 @@
           },
           "defaultConfiguration": "production"
         },
+        "server": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.server.ts",
+            "tsConfig": "tsconfig.server.json",
+            "outputMode": "server"
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "media"
+            },
+            "development": {
+              "optimization": false
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "prerender": {
+          "builder": "@angular/ssr:prerender",
+          "options": {
+            "routes": ["/"]
+          }
+        },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
