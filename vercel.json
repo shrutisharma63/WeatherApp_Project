@@ -2,10 +2,10 @@
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist/my-angular-weather-app/browser",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
     }
   ]
 }
