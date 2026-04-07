@@ -1,4 +1,4 @@
-<div class="weather-container" *ngIf="weatherService.currentWeather() as weather">
+<div class="weather-container" *ngIf="validWeather as weather">
   
   <!-- Current Weather -->
   <div class="current-weather">
@@ -72,7 +72,7 @@
       </div>
 
       <!-- Temperature Chart -->
-      <div class="chart-card" style="margin-top: 20px;">
+      <div class="chart-card chart-card--top-gap">
         <h3>7-Day Temperature</h3>
         <div class="chart-wrapper">
           <canvas baseChart
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Row 2: All 4 Charts -->
-    <div class="charts-section" style="margin-top: 120px;" *ngIf="isBrowser">
+    <div class="charts-section charts-section--spaced" *ngIf="isBrowser">
       <!-- Rain Chance Chart -->
       <div class="chart-card">
         <h3>Rain Chance</h3>
@@ -173,15 +173,6 @@
 
   </div>
 </div>
-
-<!-- Loading State -->
-<div class="loading" *ngIf="weatherService.isLoading()">
-<div class="loading-spinner">
-  <div class="pulse"></div>
-</div>
-  <p>Loading weather data...</p>
-</div>
-
 
 <!-- Error State -->
 <div class="error" *ngIf="weatherService.error() as errorMessage">

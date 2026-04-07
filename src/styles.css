@@ -1,17 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
 /* Global styles and app background */
+
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body, app-root { height: 100%; }
 
 /* Ensure app-root and main containers inherit the global background (stronger specificity) */
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; color: #333; }
+body { margin: 0; width: 100%; overflow-x: hidden; font-family: "Outfit", "Segoe UI", sans-serif; color: #1f2937; }
 app-root, body, html {
   height: 100%;
-  /* Weather-themed sky gradient - fresh sky blue */
-  background: linear-gradient(180deg, 
-    #87CEEB 0%,    /* Sky blue at top */
-    #E0F6FF 30%,   /* Light sky */
-    #B8E4F9 60%,   /* Soft blue */
-    #87CEEB 100%  /* Sky blue at bottom */
+  width: 100%;
+  /* Clean sky palette that matches weather cards */
+  background: linear-gradient(160deg,
+    #e0f2fe 0%,
+    #bae6fd 28%,
+    #7dd3fc 58%,
+    #38bdf8 100%
   ) !important;
   min-height: 100vh;
   background-attachment: fixed; /* Ensures gradient covers full page */
@@ -22,19 +27,23 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.08;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.32), transparent 35%),
+    radial-gradient(circle at 82% 78%, rgba(255, 255, 255, 0.22), transparent 36%),
+    radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: auto, auto, 44px 44px;
+  opacity: 0.24;
   pointer-events: none;
+  animation: skyPulse 8s ease-in-out infinite alternate;
 }
 
 /* Dark theme styles - Night sky theme */
 .dark-theme {
-  background: linear-gradient(180deg, 
-    #0a0a1a 0%,     /* Deep night */
-    #1a1a3a 30%,    /* Dark blue */
-    #2d1b4e 60%,    /* Purple night */
-    #1a1a3a 100%   /* Dark blue */
+  background: linear-gradient(160deg,
+    #020617 0%,
+    #0f172a 32%,
+    #312e81 67%,
+    #1d4ed8 100%
   ) !important;
   color: #ffffff;
   min-height: 100vh;
@@ -125,4 +134,15 @@ body::before {
 .dark-theme span,
 .dark-theme div {
   color: #ffffff;
+}
+
+@keyframes skyPulse {
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 0.26;
+  }
+  to {
+    transform: scale(1.03) translateY(-6px);
+    opacity: 0.4;
+  }
 }

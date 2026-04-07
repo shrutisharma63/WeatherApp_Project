@@ -1,33 +1,87 @@
-<div class="search-bar">
-  <button 
-    type="button" 
-    class="location-btn" 
-(click)="onLocationClick()"
-    title="Use my location"
-  >
-    📍
-  </button>
-  <input 
-    type="text" 
-    placeholder="Search for a city..." 
-    [(ngModel)]="searchQuery"
-(input)="onSearchInput($event)"
-    (keydown)="onKeyDown($event)"
-  />
-  <div *ngIf="showResults" class="autocomplete-dropdown" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 1001; background: white; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">
-    <div *ngFor="let result of searchResults" class="autocomplete-item" (click)="selectResult(result)">
-      {{ result.name }}<br><small>{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</small>
+<section class="weather-top-shell">
+  <nav class="city-tabs" aria-label="Top cities">
+    <button
+      *ngFor="let city of topCities"
+      type="button"
+      class="city-tab"
+      [class.active]="activeCity === city.label"
+      (click)="onTopCitySelect(city)"
+    >
+      <span class="city-name">{{ city.label }}</span>
+      <span class="city-meta">
+        <span class="city-icon">{{ getTabIcon(city) }}</span>
+        <span class="city-temp">{{ getTabTemperature(city) }}</span>
+      </span>
+    </button>
+  </nav>
+
+  <div class="search-wrap">
+    <div class="search-bar">
+      <button
+        type="button"
+        class="location-btn"
+        (click)="onLocationClick()"
+        title="Use my location"
+      >
+        📍
+      </button>
+      <input
+        type="text"
+        placeholder="Search city or state..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)"
+        (keydown)="onKeyDown($event)"
+      />
+      <button
+        *ngIf="searchQuery"
+        type="button"
+        class="clear-btn"
+        (click)="clearSearch()"
+        title="Clear search"
+      >
+        ✕
+      </button>
+      <button type="submit" class="search-btn" (click)="onSearch()">Search</button>
+    </div>
+
+    <div class="autocomplete-dropdown" [class.open]="showResults" [attr.aria-hidden]="!showResults">
+      <div *ngFor="let result of searchResults" class="autocomplete-item" (click)="selectResult(result)">
+        <span class="item-name">{{ result.name }}</span>
+        <small class="item-meta">{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</small>
+      </div>
+      <div *ngIf="showResults && searchResults.length === 0" class="autocomplete-empty">
+        No matching city found.
+      </div>
     </div>
   </div>
-  <button 
-    *ngIf="searchQuery" 
-    type="button" 
-    class="clear-btn" 
-    (click)="clearSearch()"
-    title="Clear search"
-  >
-    ✕
-  </button>
-  <button type="submit" (click)="onSearch()">Search</button>
-</div>
+
+  <div class="alerts-row">
+    <div class="alert-chip" *ngFor="let alert of alerts">
+      <span class="alert-icon">{{ alert.icon }}</span>
+      <span class="alert-text">
+        <strong>{{ alert.title }}</strong>
+        <small>{{ alert.detail }}</small>
+      </span>
+    </div>
+  </div>
+
+  <div class="search-feedback" *ngIf="weatherService.error() as errorMessage">
+    <span class="feedback-icon">⚠️</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <article class="search-result-card" *ngIf="hasWeatherResult() && weatherService.currentWeather() as weather">
+    <header class="result-head">
+      <h3>{{ weather.location }}</h3>
+      <span class="result-temp">{{ weather.current.temperature }}°</span>
+    </header>
+    <div class="result-main">
+      <span class="result-icon">{{ getWeatherIcon() }}</span>
+      <div class="result-meta">
+        <p>{{ weatherService.getWeatherDescription(weather.current.weatherCode) }}</p>
+        <small>Feels like {{ weather.current.feelsLike }}° • Wind {{ weather.current.windSpeed }} km/h • Humidity {{ weather.current.humidity }}%</small>
+      </div>
+    </div>
+  </article>
+</section>
 

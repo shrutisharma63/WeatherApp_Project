@@ -21,11 +21,11 @@
 /* Always visible narrow sidebar with icons */
 .menu {
   position: fixed;
-  top: 50px; /* below header */
+  top: 64px; /* below header */
   left: 0;
   width: 72px;
   min-width: 72px;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 64px);
   background: linear-gradient(180deg, #ffffff 0%, #f0f8ff 100%);
   color: #000000;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -105,6 +105,11 @@ body.dark-theme .menu {
   padding: 12px;
   box-sizing: border-box;
   z-index: 1001;
+}
+
+/* Keep laptop layout clean: show mini-map only when sidebar is expanded */
+.menu:not(.expanded) ~ .sidebar-map {
+  display: none;
 }
 .sidebar-map-header {
   font-size: 0.9rem;
@@ -352,6 +357,8 @@ body.dark-theme .menu-icon {
 /* Responsive Styles */
 @media (max-width: 768px) {
   .menu {
+    top: 64px;
+    height: calc(100vh - 64px);
     width: 100%;
     max-width: 300px;
     padding: 20px 10px;
@@ -376,6 +383,12 @@ body.dark-theme .menu-icon {
   
   .sidebar-map-wrap {
     height: 120px;
+  }
+}
+
+@media (max-height: 900px) {
+  .sidebar-map {
+    display: none;
   }
 }
 

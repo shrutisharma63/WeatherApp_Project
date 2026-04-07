@@ -1,45 +1,11 @@
 <div class="modern-weather-card">
   <!-- Hourly Forecast Row -->
   <div class="hourly-forecast">
-    <div class="hourly-item current">
-      <div class="time">Now</div>
-      <div class="icon">☀️</div>
-      <div class="temp">82°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">1 PM</div>
-      <div class="icon">🌤️</div>
-      <div class="temp">85°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">2 PM</div>
-      <div class="icon">🌤️</div>
-      <div class="temp">87°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">3 PM</div>
-      <div class="icon">⛅</div>
-      <div class="temp">88°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">4 PM</div>
-      <div class="icon">☁️</div>
-      <div class="temp">86°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">5 PM</div>
-      <div class="icon">🌥️</div>
-      <div class="temp">84°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">6 PM</div>
-      <div class="icon">🌅</div>
-      <div class="temp">82°</div>
-    </div>
-    <div class="hourly-item">
-      <div class="time">7 PM</div>
-      <div class="icon">🌙</div>
-      <div class="temp">78°</div>
+    <div class="hourly-item" *ngFor="let hour of hourlyData" [class.current]="hour.isCurrent">
+      <div class="time">{{ hour.time }}</div>
+      <div class="icon">{{ hour.icon }}</div>
+      <div class="temp">{{ hour.temp }}°</div>
+      <div class="condition">{{ hour.description }}</div>
     </div>
   </div>
 
@@ -47,57 +13,43 @@
   <div class="graph-section">
     <!-- Sunrise/Sunset markers -->
     <div class="sun-markers">
-      <div class="sunrise">🌅 6:23 AM</div>
-      <div class="sunset">🌇 6:30 PM</div>
+      <div class="sunrise">🌅 {{ sunrise }}</div>
+      <div class="sunset">🌇 {{ sunset }}</div>
     </div>
     
     <!-- Chart Container -->
-    <div class="chart-container">
-      <canvas #tempChart>
-      </canvas>
+    <div class="chart-container" #chartContainer>
+      <div class="chart-stage">
+        <canvas class="temp-chart-canvas" #tempChart>
+        </canvas>
+
+        <div class="rain-segment-layer" aria-hidden="true">
+          <div
+            class="rain-segment-overlay"
+            *ngFor="let segment of rainSegmentViews"
+            [style.left.px]="segment.left"
+            [style.top.px]="segment.top"
+            [style.width.px]="segment.width"
+            [style.height.px]="segment.height"
+            [class.heavy-rain]="segment.intensity > 0.75"
+          >
+            <canvas class="rain-segment-canvas" #rainSegmentCanvas></canvas>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Weather icons above graph points -->
     <div class="graph-icons">
-      <div class="graph-icon">☀️</div>
-      <div class="graph-icon">🌤️</div>
-      <div class="graph-icon">⛅</div>
-      <div class="graph-icon">☁️</div>
-      <div class="graph-icon">🌥️</div>
-      <div class="graph-icon">🌅</div>
-      <div class="graph-icon">🌙</div>
+      <div class="graph-icon" *ngFor="let hour of hourlyData">{{ hour.icon }}</div>
     </div>
   </div>
 
   <!-- Rain Probability Bottom Row -->
   <div class="rain-probability">
-    <div class="rain-item">
+    <div class="rain-item" *ngFor="let rain of rainData">
       <span class="rain-icon">💧</span>
-      <span class="rain-percent">2%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">0%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">5%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">1%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">3%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">0%</span>
-    </div>
-    <div class="rain-item">
-      <span class="rain-icon">💧</span>
-      <span class="rain-percent">2%</span>
+      <span class="rain-percent">{{ rain }}%</span>
     </div>
   </div>
 </div>

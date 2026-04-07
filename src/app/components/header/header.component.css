@@ -1,7 +1,9 @@
 .header {
   background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%);
   color: white;
-  padding: 0.5rem;
+  height: 64px;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
   position: fixed;
   top: 0;
   left: 0;

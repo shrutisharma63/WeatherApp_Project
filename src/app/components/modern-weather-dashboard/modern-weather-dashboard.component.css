@@ -90,6 +90,17 @@
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
+.condition {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: rgba(226, 232, 240, 0.9);
+  text-align: center;
+  max-width: 74px;
+  line-height: 1.2;
+}
+
 /* Graph Section */
 .graph-section {
   position: relative;
@@ -130,6 +141,12 @@
   overflow: hidden;
 }
 
+.chart-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .chart-container::before {
   content: '';
   position: absolute;
@@ -138,9 +155,55 @@
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 30% 70%, rgba(255,165,0,0.1) 0%, transparent 50%),
-              radial-gradient(circle at 70% 30%, rgba(59,130,246,0.1) 0%, transparent 50%);
+  radial-gradient(circle at 70% 30%, rgba(59,130,246,0.1) 0%, transparent 50%);
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
+}
+
+.chart-container .temp-chart-canvas {
+  position: relative;
+  z-index: 2;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.rain-segment-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.rain-segment-overlay {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  opacity: 0;
+  animation: rainSegmentFadeIn 280ms ease forwards;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.rain-segment-overlay.heavy-rain {
+  filter: saturate(1.2) brightness(1.06);
+}
+
+.rain-segment-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@keyframes rainSegmentFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Graph Icons */

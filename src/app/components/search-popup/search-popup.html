@@ -23,7 +23,7 @@
 				<div
 					class="search-result-item"
 					*ngFor="let result of searchResults"
-					(click)="selectCityForAdd(result)">
+					(mousedown)="onResultMouseDown($event, result)">
 					<span class="material-icons city-pin">location_on</span>
 					<div>
 						<div class="search-result-name">{{ result.name }}</div>
@@ -32,11 +32,11 @@
 				</div>
 			</div>
 
-			<div *ngIf="pendingAdd" class="searching-indicator">
+			<div *ngIf="pendingAdd && addSearchQuery.trim().length >= 3" class="searching-indicator">
 				Searching cities...
 			</div>
 
-			<div *ngIf="!pendingAdd && hasSearched && searchResults.length === 0" class="no-results">
+			<div *ngIf="!pendingAdd && hasSearched && addSearchQuery.trim().length >= 3 && searchResults.length === 0" class="no-results">
 				No matching city found. Try another spelling.
 			</div>
 		</div>

@@ -22,9 +22,11 @@ export class WeatherDisplayComponent {
     private sanitizer: DomSanitizer
   ) {
       this.isBrowser = isPlatformBrowser(platformId);
-      if (this.isBrowser) {
-        this.weatherService.getUserLocationWeather();
-      }
+  }
+
+  get validWeather() {
+    const weather = this.weatherService.currentWeather();
+    return this.weatherService.isValidWeatherData(weather) ? weather : null;
   }
 
   get mapSrc(): SafeResourceUrl | null {
