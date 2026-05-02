@@ -64,9 +64,9 @@ export class WeatherService {
     { name: 'Kishanganj', latitude: 25.6839, longitude: 86.9858, country: 'India', admin1: 'Bihar' },
     { name: 'Ajmer', latitude: 26.4499, longitude: 74.6399, country: 'India', admin1: 'Rajasthan' }
   ];
-  private readonly fallbackCity = 'Kishangarh';
+private readonly fallbackCity = 'Kishangarh';
   private fallbackCoordinates = { latitude: 26.5918, longitude: 74.8518 };
-  private lockPreferredCity = true;
+  private lockPreferredCity = false; // Changed to false to allow location-based weather for all users
   private cachedWeatherKey = 'my-weather-app:last-known-weather';
   private userLocationCacheKey = 'my-weather-app:user-location-cache';
   private readonly userLocationCacheTtlMs = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -108,11 +108,14 @@ export class WeatherService {
     99: 'Thunderstorm with heavy hail'
   };
 
-  currentWeather = signal<WeatherData | null>(null);
+currentWeather = signal<WeatherData | null>(null);
   isLoading = signal<boolean>(false);
   error = signal<string | null>(null);
   initialized = signal<boolean>(false);
   temperatureUnit = signal<string>('celsius');
+  // Track if user's actual location has been detected (vs default fallback)
+  userLocationDetected = signal<boolean>(false);
+  detectedLocationName = signal<string>('');
 
   constructor(private http: HttpClient) {
     if (typeof window !== 'undefined') {
@@ -689,10 +692,13 @@ export class WeatherService {
     this.isLoading.set(true);
     this.error.set(null);
 
-    // Check if we have a cached user location
+// Check if we have a cached user location
     const cachedLocation = this.getCachedUserLocation();
     if (cachedLocation) {
       console.log('📍 Using cached location:', cachedLocation.name, 'Lat:', cachedLocation.latitude, 'Lon:', cachedLocation.longitude);
+      // Mark as detected for UI
+      this.userLocationDetected.set(true);
+      this.detectedLocationName.set(cachedLocation.name);
       // Load weather for cached location
       this.getWeather(cachedLocation.latitude, cachedLocation.longitude, cachedLocation.name).subscribe({
         next: (weatherData) => {
@@ -727,9 +733,12 @@ export class WeatherService {
             city => city.name.toLowerCase() === ipCity
           );
 
-          if (matchedCity) {
+if (matchedCity) {
             console.log('✅ Matched city from IP:', matchedCity.name, '| Lat:', matchedCity.latitude, 'Lon:', matchedCity.longitude);
             this.cacheUserLocation(matchedCity);
+            // Mark location as detected for UI feedback
+            this.userLocationDetected.set(true);
+            this.detectedLocationName.set(matchedCity.name);
             
             this.getWeather(matchedCity.latitude, matchedCity.longitude, matchedCity.name).subscribe({
               next: (weatherData) => {
@@ -778,8 +787,11 @@ export class WeatherService {
           const distance = this.calculateDistance(userLat, userLon, closestCity.latitude, closestCity.longitude);
           console.log('✅ Closest city from GPS:', closestCity.name, '| Distance:', distance.toFixed(2) + ' km');
           
-          // Cache the detected location
+// Cache the detected location
           this.cacheUserLocation(closestCity);
+          // Mark location as detected for UI feedback
+          this.userLocationDetected.set(true);
+          this.detectedLocationName.set(closestCity.name);
           
           this.getWeather(closestCity.latitude, closestCity.longitude, closestCity.name).subscribe({
             next: (weatherData) => {
@@ -869,6 +881,8 @@ export class WeatherService {
     }
   }
 
+private readonly locationDetectedKey = 'my-weather-app:location-detected';
+
   refreshUserLocation(): void {
     // Clear the cached location to force re-detection on next request
     if (typeof localStorage !== 'undefined') {
@@ -880,6 +894,209 @@ export class WeatherService {
     }
     // Detect location again
     this.getUserLocationWeather();
+  }
+
+  /**
+   * Check if location has been detected before (to avoid repeated permission prompts)
+   */
+  hasLocationBeenDetected(): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
+    try {
+      return localStorage.getItem(this.locationDetectedKey) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Mark that location has been detected (so we don't prompt again)
+   */
+  private markLocationDetected(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+    try {
+      localStorage.setItem(this.locationDetectedKey, 'true');
+    } catch {
+      // Ignore storage errors
+    }
+  }
+
+  /**
+   * Detect user's location automatically on first app visit
+   * Priority: GPS (browser) → IP-based → Kishangarh fallback
+   * Shows permission dialog only on first visit
+   */
+  detectUserLocationOnFirstVisit(): void {
+    // Already attempted detection - don't prompt again
+    if (this.hasLocationBeenDetected()) {
+      console.log('📍 Location already detected previously, skipping auto-detection');
+      // Still load weather for cached location or use default
+      this.getUserLocationWeather();
+      return;
+    }
+
+    console.log('🔄 First visit: Starting automatic location detection...');
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    // Use browser GPS first - this will show permission prompt
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      const geoOptions: PositionOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+          
+          console.log('✅ GPS Permission granted! Lat:', userLat, 'Lon:', userLon);
+          
+          // Find closest city from all available cities
+this.findClosestCityForCoords(userLat, userLon).then(closestCity => {
+            this.markLocationDetected();
+            this.cacheUserLocation(closestCity);
+            // Mark as detected for UI
+            this.userLocationDetected.set(true);
+            this.detectedLocationName.set(closestCity.name);
+            
+            this.getWeather(closestCity.latitude, closestCity.longitude, closestCity.name).subscribe({
+              next: (weatherData) => {
+                console.log('✅ Weather loaded for detected location:', weatherData.location);
+                this.currentWeather.set(weatherData);
+                this.isLoading.set(false);
+                this.initialized.set(true);
+              },
+              error: () => {
+                console.error('Weather fetch failed for GPS location');
+                this.loadFallbackCity();
+              }
+            });
+          });
+        },
+        (error) => {
+          console.log('⚠️ GPS permission denied or error:', error.message, '- falling back to IP detection');
+          // GPS denied - try IP-based detection instead
+          this.detectLocationViaIPOnly();
+        },
+        geoOptions
+      );
+    } else {
+      // No GPS available - use IP
+      console.log('📱 No GPS available, using IP detection');
+      this.detectLocationViaIPOnly();
+    }
+  }
+
+  /**
+   * Fallback: Detect location via IP API only (no GPS)
+   */
+  private detectLocationViaIPOnly(): void {
+    this.http.get<any>('https://ipapi.co/json/')
+      .subscribe({
+        next: (ipData) => {
+          const ipCity = ipData.city?.toLowerCase().trim();
+          const ipCountry = ipData.country_name || ipData.country;
+          console.log('🌐 IP API returned - City:', ipData.city, 'Country:', ipCountry);
+          
+          // Try to find matching city from curated list
+          const matchedCity = this.curatedCities.find(
+            city => city.name.toLowerCase() === ipCity
+          );
+
+          if (matchedCity) {
+            console.log('✅ Matched city from IP:', matchedCity.name);
+            this.markLocationDetected();
+            this.cacheUserLocation(matchedCity);
+            
+            this.getWeather(matchedCity.latitude, matchedCity.longitude, matchedCity.name).subscribe({
+              next: (weatherData) => {
+                this.currentWeather.set(weatherData);
+                this.isLoading.set(false);
+                this.initialized.set(true);
+              },
+              error: () => {
+                this.loadFallbackCity();
+              }
+            });
+          } else {
+            // IP city not in curated list - use GPS to find closest from all India
+            console.log('📍 IP city not in list, detecting via reverse geocoding...');
+            const ipLat = ipData.latitude ?? ipData.lat;
+            const ipLon = ipData.longitude ?? ipData.lon;
+            
+            if (ipLat && ipLon) {
+              this.findClosestCityForCoords(ipLat, ipLon).then(closestCity => {
+                this.markLocationDetected();
+                this.cacheUserLocation(closestCity);
+                
+                this.getWeather(closestCity.latitude, closestCity.longitude, closestCity.name).subscribe({
+                  next: (weatherData) => {
+                    this.currentWeather.set(weatherData);
+                    this.isLoading.set(false);
+                    this.initialized.set(true);
+                  },
+                  error: () => {
+                    this.loadFallbackCity();
+                  }
+                });
+              });
+            } else {
+              this.loadFallbackCity();
+            }
+          }
+        },
+        error: (err) => {
+          console.log('❌ IP detection failed:', err.message);
+          this.loadFallbackCity();
+        }
+      });
+  }
+
+  /**
+   * Find closest city from curated list using coordinates
+   */
+  private async findClosestCityForCoords(lat: number, lon: number): Promise<GeocodingResult> {
+    // Use reverse geocoding to find city name from coordinates
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      const data = await response.json();
+      
+      if (data.address) {
+        const cityName = data.address.city || data.address.town || data.address.village || data.address.county;
+        if (cityName) {
+          // Try to find in our curated cities
+          const found = this.curatedCities.find(c => 
+            c.name.toLowerCase() === cityName.toLowerCase()
+          );
+          if (found) {
+            return found;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Reverse geocoding failed:', e);
+    }
+
+    // Fallback: find closest from curated list
+    let closestCity = this.curatedCities[0];
+    let minDistance = this.calculateDistance(lat, lon, closestCity.latitude, closestCity.longitude);
+
+    for (let i = 1; i < this.curatedCities.length; i++) {
+      const city = this.curatedCities[i];
+      const distance = this.calculateDistance(lat, lon, city.latitude, city.longitude);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = city;
+      }
+    }
+
+    return closestCity;
   }
 
   setPreferredCity(cityName: string): void {

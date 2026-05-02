@@ -102,9 +102,9 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Set Kishangarh as your preferred city
-    console.log('🌍 Initializing with Kishangarh as your city...');
-    this.weatherService.setPreferredCity('Kishangarh');
+// Automatically detect user's location on first visit (with permission prompt)
+    console.log('🌍 Starting automatic location detection...');
+    this.weatherService.detectUserLocationOnFirstVisit();
   }
 
   onSearchInput(event: any): void {
