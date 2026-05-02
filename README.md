@@ -39,4 +39,4 @@ ng serve
 http://localhost:4200
 
 📸 Screenshots
-![Home UI](src/assets/dashboard.png)
+![Home UI](src/assets/dashboardimg.png)
