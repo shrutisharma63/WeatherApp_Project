@@ -16,7 +16,7 @@
   </nav>
 
   <div class="search-wrap">
-    <div class="search-bar">
+    <div class="search-bar" (click)="onSearchBarClick($event)">
       <button
         type="button"
         class="location-btn"
@@ -26,10 +26,13 @@
         📍
       </button>
       <input
+        #searchInput
         type="text"
         placeholder="Search city or state..."
-        [(ngModel)]="searchQuery"
+        autocomplete="off"
+        [value]="searchQuery"
         (input)="onSearchInput($event)"
+        (focus)="onSearchInputFocus()"
         (keydown)="onKeyDown($event)"
       />
       <button
@@ -41,15 +44,24 @@
       >
         ✕
       </button>
-      <button type="submit" class="search-btn" (click)="onSearch()">Search</button>
+      <button type="button" class="search-btn" (click)="onSearch()">Search</button>
     </div>
 
-    <div class="autocomplete-dropdown" [class.open]="showResults" [attr.aria-hidden]="!showResults">
-      <div *ngFor="let result of searchResults" class="autocomplete-item" (click)="selectResult(result)">
+    <div class="autocomplete-dropdown" [class.open]="showResults" [attr.aria-hidden]="!showResults" [attr.aria-busy]="loadingSuggestions" role="listbox">
+      <div *ngIf="loadingSuggestions" class="autocomplete-loading" role="status" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Loading</span>
+      </div>
+      <button
+        *ngFor="let result of searchResults; trackBy: trackBySuggestion"
+        type="button"
+        class="autocomplete-item"
+        (click)="selectResult(result)"
+      >
         <span class="item-name">{{ result.name }}</span>
         <small class="item-meta">{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</small>
-      </div>
-      <div *ngIf="showResults && searchResults.length === 0" class="autocomplete-empty">
+      </button>
+      <div *ngIf="showResults && searchResults.length === 0 && !loadingSuggestions" class="autocomplete-empty">
         No matching city found.
       </div>
     </div>

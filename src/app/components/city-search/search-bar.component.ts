@@ -1,18 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, ElementRef, ViewChild, Inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { WeatherService, GeocodingResult } from '../../services/weather.service';
-import { Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, takeUntil, map, catchError } from 'rxjs/operators';
+import { Subject, of, fromEvent } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil, timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-search-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './search-bar.component.html',
-  styleUrls: ['./search-bar.component.css', './autocomplete.css']
+  styleUrls: ['./search-bar.component.css', './autocomplete.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
+  private readonly maxSuggestions = 8;
   private readonly preferredRegion = { country: 'india', state: 'rajasthan' };
   private readonly curatedSuggestions: GeocodingResult[] = [
     { name: 'Jaipur', latitude: 26.9124, longitude: 75.7873, country: 'India', admin1: 'Rajasthan' },
@@ -34,62 +35,135 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     { icon: '⛈️', title: 'Severe Thunderstorm', detail: 'Watch window 5 PM - 8 PM' }
   ];
 
-  activeCity = 'Kishangarh';
+  activeCity = '';
   searchQuery: string = '';
   searchResults: GeocodingResult[] = [];
+  selectedSuggestion: GeocodingResult | null = null;
+  loadingSuggestions = false;
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
+  private suggestionCache = new Map<string, GeocodingResult[]>();
   showResults = false;
+  @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
-  constructor(public weatherService: WeatherService) {}
+  constructor(public weatherService: WeatherService, private cdr: ChangeDetectorRef, @Inject(DOCUMENT) private document: Document) {}
 
   ngOnInit(): void {
     this.searchSubject.pipe(
-      debounceTime(200),
+      debounceTime(80),
       map((query) => query.trim()),
       distinctUntilChanged(),
       switchMap((query) => {
-        if (query.length < 2) {
-          return of([] as GeocodingResult[]);
+        if (!query) {
+          this.loadingSuggestions = false;
+          return of({ query, results: [] as GeocodingResult[], loading: false });
         }
 
-        const cached = this.weatherService.getCachedCitySuggestions(query);
+        this.loadingSuggestions = true;
+        const instantResults = this.getInstantSuggestions(query);
+
         return this.weatherService.searchCity(query).pipe(
-          map((apiResults) => this.mergeAndRankSuggestions(query, [...cached, ...apiResults])),
-          catchError(() => of(this.mergeAndRankSuggestions(query, cached)))
+          timeout(3000),
+          map((apiResults) => ({
+            query,
+            results: this.mergeAndRankSuggestions(query, [...instantResults, ...apiResults]).slice(0, this.maxSuggestions),
+            loading: false
+          })),
+          catchError(() => of({
+            query,
+            results: instantResults,
+            loading: false
+          }))
         );
       }),
       takeUntil(this.destroy$)
-    ).subscribe(results => {
-      this.searchResults = results.slice(0, 8);
-      this.showResults = this.searchQuery.trim().length >= 2;
-
-      // Dynamic trigger: if user typed enough and there is an exact start match, fetch quickly.
-      if (this.searchQuery.trim().length > 2 && results.length > 0) {
-        const normalized = this.searchQuery.trim().toLowerCase();
-        const best = results.find((item) => item.name.toLowerCase().startsWith(normalized)) || results[0];
-        if (best && normalized.length >= 4) {
-          this.weatherService.searchWeather(best.name);
-        }
+    ).subscribe(({ query, results, loading }) => {
+      if (query !== this.searchQuery.trim()) {
+        return;
       }
+
+      this.suggestionCache.set(query.toLowerCase(), results);
+      this.searchResults = results;
+      this.showResults = query.length >= 1;
+      this.loadingSuggestions = loading;
     });
 
-    // Weather is loaded from weather-display component by default
+    // Close suggestions when clicking outside the search bar
+    fromEvent<MouseEvent>(this.document, 'click')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event: MouseEvent) => {
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+        
+        // Check if click is outside the search wrapper
+        const searchWrapper = this.document.querySelector('.search-wrap');
+        if (searchWrapper && !searchWrapper.contains(target)) {
+          this.closeSuggestions();
+        }
+      });
+
+    // Set Kishangarh as your preferred city
+    console.log('🌍 Initializing with Kishangarh as your city...');
+    this.weatherService.setPreferredCity('Kishangarh');
   }
 
   onSearchInput(event: any): void {
-    this.searchSubject.next(event.target.value);
+    const value = String(event?.target?.value ?? '');
+    this.handleSearchInput(value);
+  }
+
+  onSearchInputFocus(): void {
+    this.showResults = this.searchQuery.trim().length >= 1 && this.searchResults.length > 0;
+  }
+
+  private handleSearchInput(value: string): void {
+    this.searchQuery = value;
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized) {
+      this.searchResults = [];
+      this.showResults = false;
+      this.selectedSuggestion = null;
+      this.loadingSuggestions = false;
+      this.searchSubject.next(value);
+      return;
+    }
+
+    const instantResults = this.getInstantSuggestions(value);
+    this.searchResults = instantResults;
+    this.showResults = true;
+    this.loadingSuggestions = instantResults.length === 0;
+
+    if (this.selectedSuggestion) {
+      const selectedLabel = `${this.selectedSuggestion.name}, ${this.selectedSuggestion.country}`.toLowerCase();
+      if (selectedLabel !== normalized) {
+        this.selectedSuggestion = null;
+      }
+    }
+
+    this.searchSubject.next(value);
+  }
+
+  onSearchBarClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('button') || target?.closest('input')) {
+      return;
+    }
+
+    this.focusSearchInput();
+    this.cdr.markForCheck();
   }
 
   onLocationClick(): void {
     this.weatherService.getUserLocationWeather();
   }
 
-  onTopCitySelect(city: { label: string; query: string }): void {
+  async onTopCitySelect(city: { label: string; query: string }): Promise<void> {
     this.activeCity = city.label;
     this.searchQuery = city.query;
+    this.selectedSuggestion = null;
     this.showResults = false;
-    this.weatherService.searchWeather(city.query);
+    await this.weatherService.searchWeather(city.query);
   }
 
   getTabTemperature(city: { label: string; temp: number }): string {
@@ -107,39 +181,124 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   }
 
   selectResult(result: GeocodingResult): void {
-    this.searchQuery = `${result.name}, ${result.country}`;
+    this.searchQuery = result.name;
     this.activeCity = result.name;
+    this.selectedSuggestion = result;
     this.showResults = false;
-    this.weatherService.searchWeather(result.name);
+    this.loadingSuggestions = false;
+    this.cdr.markForCheck();
+    this.focusSearchInput(true);
+    
+    // Log selected city and coordinates for debugging
+    console.log(`🌍 City selected: ${result.name}, Lat: ${result.latitude}, Lon: ${result.longitude}`);
+    
+    // Load weather for the selected city
+    this.weatherService.searchWeatherBySelection(result).then(() => {
+      this.cdr.markForCheck();
+    });
   }
 
-  onSearch(): void {
+  async onSearch(): Promise<void> {
     if (!this.searchQuery.trim()) {
       this.weatherService.error.set('Please enter a city name to continue.');
+      this.showResults = false;
       return;
     }
-    this.weatherService.searchWeather(this.searchQuery);
+
+    const query = this.searchQuery.trim();
     this.showResults = false;
+
+    if (this.selectedSuggestion) {
+      const selectedCity = this.selectedSuggestion.name.toLowerCase();
+      const selectedLabel = `${this.selectedSuggestion.name}, ${this.selectedSuggestion.country}`.toLowerCase();
+      const normalizedQuery = query.toLowerCase();
+      if (selectedLabel === normalizedQuery || selectedCity === normalizedQuery) {
+        this.activeCity = this.selectedSuggestion.name;
+        await this.weatherService.searchWeatherBySelection(this.selectedSuggestion);
+        return;
+      }
+    }
+
+    const normalizedQuery = query.toLowerCase();
+    const localSuggestions = this.searchResults.length > 0
+      ? this.searchResults
+      : this.weatherService.getCachedCitySuggestions(query);
+    const bestMatch = localSuggestions.find((item) => item.name.toLowerCase() === normalizedQuery) || null;
+    if (bestMatch) {
+      this.selectedSuggestion = bestMatch;
+      this.activeCity = bestMatch.name;
+      await this.weatherService.searchWeatherBySelection(bestMatch);
+      return;
+    }
+
+    this.selectedSuggestion = null;
+    await this.weatherService.searchWeather(query);
   }
 
   onKeyDown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
-      this.onSearch();
+      void this.onSearch();
     }
   }
 
   clearSearch(): void {
+    // Immediately clear the UI without waiting
     this.searchQuery = '';
     this.searchResults = [];
+    this.selectedSuggestion = null;
     this.showResults = false;
+    this.loadingSuggestions = false;
     this.weatherService.error.set(null);
+    this.cdr.markForCheck();
+    this.focusSearchInput();
+
+    // Reload the weather in the background (non-blocking)
+    void this.weatherService.searchWeather(this.activeCity);
+  }
+
+  private focusSearchInput(placeCaretAtEnd = false): void {
+    const input = this.searchInput?.nativeElement;
+    if (!input) {
+      return;
+    }
+
+    // Immediate focus without delay for responsiveness
+    input.focus({ preventScroll: true });
+    if (placeCaretAtEnd) {
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
+    }
+  }
+
+  private getCurrentCityName(): string {
+    const location = this.weatherService.currentWeather()?.location || this.activeCity || '';
+    return location.split(',')[0]?.trim() || '';
+  }
+
+  private getInstantSuggestions(query: string): GeocodingResult[] {
+    if (query.length < 1) {
+      return [];
+    }
+
+    const normalized = query.toLowerCase();
+    const componentCached = this.suggestionCache.get(normalized);
+    if (componentCached) {
+      return componentCached.slice(0, this.maxSuggestions);
+    }
+
+    const instant = this.mergeAndRankSuggestions(query, this.weatherService.getInstantCitySuggestions(query))
+      .slice(0, this.maxSuggestions);
+    this.suggestionCache.set(normalized, instant);
+    return instant;
   }
 
   private mergeAndRankSuggestions(query: string, source: GeocodingResult[]): GeocodingResult[] {
     const normalized = query.trim().toLowerCase();
     const merged = [...source, ...this.curatedSuggestions];
     const unique = new Map<string, GeocodingResult>();
+    const itemsWithLabels: Array<{ item: GeocodingResult; label: string; score: number }> = [];
 
+    // Deduplicate and create labels once
     for (const item of merged) {
       if (!item?.name || !item?.country) {
         continue;
@@ -163,27 +322,71 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       }
     }
 
-    return Array.from(unique.values())
-      .filter((item) => {
-        const label = `${item.name} ${item.admin1 || ''} ${item.country}`.toLowerCase();
-        return label.includes(normalized);
-      })
+    // Filter and score in one pass
+    for (const item of unique.values()) {
+      const label = `${item.name} ${item.admin1 || ''} ${item.country}`.toLowerCase();
+      if (label.includes(normalized) || this.isFuzzyMatch(label, normalized)) {
+        const score = this.getFuzzyScore(label, normalized);
+        itemsWithLabels.push({ item, label, score });
+      }
+    }
+
+    // Sort with pre-computed scores
+    return itemsWithLabels
       .sort((a, b) => {
-        const aRegionBoost = this.getRegionBoost(a);
-        const bRegionBoost = this.getRegionBoost(b);
+        if (a.score !== b.score) {
+          return b.score - a.score;
+        }
+
+        const aRegionBoost = this.getRegionBoost(a.item);
+        const bRegionBoost = this.getRegionBoost(b.item);
         if (aRegionBoost !== bRegionBoost) {
           return bRegionBoost - aRegionBoost;
         }
 
-        const aName = a.name.toLowerCase();
-        const bName = b.name.toLowerCase();
-        const aStarts = aName.startsWith(normalized) ? 1 : 0;
-        const bStarts = bName.startsWith(normalized) ? 1 : 0;
+        const aStarts = a.item.name.toLowerCase().startsWith(normalized) ? 1 : 0;
+        const bStarts = b.item.name.toLowerCase().startsWith(normalized) ? 1 : 0;
         if (aStarts !== bStarts) {
           return bStarts - aStarts;
         }
-        return aName.localeCompare(bName);
-      });
+        return a.item.name.toLowerCase().localeCompare(b.item.name.toLowerCase());
+      })
+      .map(({ item }) => item);
+  }
+
+  private isFuzzyMatch(text: string, query: string): boolean {
+    if (!query) {
+      return false;
+    }
+
+    let index = 0;
+    for (let i = 0; i < text.length && index < query.length; i++) {
+      if (text[i] === query[index]) {
+        index++;
+      }
+    }
+
+    return index === query.length;
+  }
+
+  private getFuzzyScore(text: string, query: string): number {
+    if (!query) {
+      return 0;
+    }
+
+    if (text.startsWith(query)) {
+      return 100 + query.length;
+    }
+
+    if (text.includes(query)) {
+      return 70 + query.length;
+    }
+
+    if (this.isFuzzyMatch(text, query)) {
+      return 40 + query.length;
+    }
+
+    return 0;
   }
 
   private getRegionBoost(item: GeocodingResult): number {
@@ -200,6 +403,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     }
 
     return score;
+  }
+
+  trackBySuggestion(_: number, suggestion: GeocodingResult): string {
+    return `${suggestion.name}|${suggestion.country}|${suggestion.admin1 || ''}|${suggestion.latitude}|${suggestion.longitude}`;
   }
 
   hasWeatherResult(): boolean {
@@ -219,5 +426,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     this.searchSubject.complete();
   }
-}
 
+  private closeSuggestions(): void {
+    if (this.showResults) {
+      this.showResults = false;
+      this.cdr.markForCheck();
+    }
+  }
+}

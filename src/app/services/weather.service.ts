@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, catchError, of, throwError, tap, switchMap, EMPTY } from 'rxjs';
+import { Observable, map, catchError, of, throwError, tap, switchMap, EMPTY, firstValueFrom } from 'rxjs';
 
 export interface WeatherData {
   location: string;
@@ -57,11 +57,25 @@ export class WeatherService {
 
   private geocodingApiUrl = 'https://geocoding-api.open-meteo.com/v1/search';
   private weatherApiUrl = 'https://api.open-meteo.com/v1/forecast';
-  private fallbackCity = 'Kishangarh';
-  private fallbackCoordinates = { latitude: 26.59006, longitude: 74.85397 };
+  private readonly curatedCities: GeocodingResult[] = [
+    { name: 'Jaipur', latitude: 26.9124, longitude: 75.7873, country: 'India', admin1: 'Rajasthan' },
+    { name: 'Jaisalmer', latitude: 26.9157, longitude: 70.9083, country: 'India', admin1: 'Rajasthan' },
+    { name: 'Kishangarh', latitude: 26.5918, longitude: 74.8518, country: 'India', admin1: 'Rajasthan' },
+    { name: 'Kishanganj', latitude: 25.6839, longitude: 86.9858, country: 'India', admin1: 'Bihar' },
+    { name: 'Ajmer', latitude: 26.4499, longitude: 74.6399, country: 'India', admin1: 'Rajasthan' }
+  ];
+  private readonly fallbackCity = 'Kishangarh';
+  private fallbackCoordinates = { latitude: 26.5918, longitude: 74.8518 };
   private lockPreferredCity = true;
   private cachedWeatherKey = 'my-weather-app:last-known-weather';
+  private userLocationCacheKey = 'my-weather-app:user-location-cache';
+  private readonly userLocationCacheTtlMs = 7 * 24 * 60 * 60 * 1000; // 7 days
   private citySearchCache = new Map<string, GeocodingResult[]>();
+  private citySuggestionIndex = new Map<string, GeocodingResult[]>();
+  private weatherResponseCache = new Map<string, { data: WeatherData; timestamp: number }>();
+  private readonly weatherCacheTtlMs = 15 * 60 * 1000; // 15 minutes for fresher data
+  private inFlightWeatherSearches = new Map<string, Promise<void>>();
+  private readonly preferredCityKey = 'my-weather-app:preferred-city';
 
   private weatherCodes: { [key: number]: string } = {
     0: 'Clear sky',
@@ -102,6 +116,8 @@ export class WeatherService {
 
   constructor(private http: HttpClient) {
     if (typeof window !== 'undefined') {
+      void this.loadIndianCities();
+
       // Always render something immediately on refresh, then update in background.
       const hydratedFromCache = this.hydrateWeatherFromCache();
       if (!hydratedFromCache) {
@@ -227,8 +243,13 @@ export class WeatherService {
 
   getCachedCitySuggestions(cityName: string): GeocodingResult[] {
     const normalizedCity = cityName.trim().toLowerCase();
-    if (normalizedCity.length < 2) {
+    if (normalizedCity.length < 1) {
       return [];
+    }
+
+    const indexed = this.citySuggestionIndex.get(normalizedCity);
+    if (indexed && indexed.length > 0) {
+      return indexed;
     }
 
     const exact = this.citySearchCache.get(normalizedCity);
@@ -256,6 +277,15 @@ export class WeatherService {
     });
   }
 
+  getInstantCitySuggestions(cityName: string): GeocodingResult[] {
+    const normalizedCity = cityName.trim().toLowerCase();
+    if (!normalizedCity) {
+      return [];
+    }
+
+    return this.getCachedCitySuggestions(normalizedCity).slice(0, 8);
+  }
+
   searchCity(cityName: string): Observable<GeocodingResult[]> {
     const normalizedCity = cityName.trim().toLowerCase();
     if (!normalizedCity) {
@@ -267,10 +297,20 @@ export class WeatherService {
       return of(cached);
     }
 
+    const indexed = this.citySuggestionIndex.get(normalizedCity);
+    if (indexed && indexed.length > 0) {
+      return of(indexed.slice(0, 8));
+    }
+
+    const inherited = this.getCachedCitySuggestions(normalizedCity);
+    if (inherited.length > 0 && normalizedCity.length <= 4) {
+      return of(inherited.slice(0, 8));
+    }
+
     // Ultra-fast local first
     const localMatch = this.getLocalCities(normalizedCity);
     if (localMatch.length > 0) {
-      this.citySearchCache.set(normalizedCity, localMatch);
+      this.cacheCitySuggestions(normalizedCity, localMatch);
       return of(localMatch);
     }
 
@@ -278,7 +318,7 @@ export class WeatherService {
       .pipe(
         map(response => this.sanitizeSuggestions(response.results || [])),
         tap(results => {
-          this.citySearchCache.set(normalizedCity, results);
+          this.cacheCitySuggestions(normalizedCity, results);
         }),
         catchError(() => of([]))
       );
@@ -288,11 +328,89 @@ export class WeatherService {
 
   private async loadIndianCities(): Promise<void> {
     try {
-      const response = await fetch('/src/app/components/city-search/indian-cities-cache.json');
-      this.indianCities = await response.json();
+      const candidateUrls = [
+        '/assets/indian-cities-cache.json',
+        '/src/app/components/city-search/indian-cities-cache.json'
+      ];
+
+      for (const url of candidateUrls) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) {
+            continue;
+          }
+
+          const data = await response.json();
+          if (!Array.isArray(data)) {
+            continue;
+          }
+
+          this.indianCities = this.sanitizeSuggestions(data).slice(0, 5000);
+          this.buildLocalCityIndex(this.indianCities);
+          return;
+        } catch {
+          // Try next source.
+        }
+      }
     } catch (e) {
       console.warn('Local cities not loaded, using API only');
     }
+  }
+
+  private buildLocalCityIndex(cities: GeocodingResult[]): void {
+    for (const city of cities) {
+      this.indexSuggestion(city.name.toLowerCase(), city);
+      this.indexSuggestion(`${city.name} ${city.country}`.toLowerCase(), city);
+      if (city.admin1) {
+        this.indexSuggestion(`${city.name} ${city.admin1}`.toLowerCase(), city);
+      }
+    }
+  }
+
+  private cacheCitySuggestions(queryKey: string, results: GeocodingResult[]): void {
+    this.citySearchCache.set(queryKey, results);
+
+    for (const city of results) {
+      this.indexSuggestion(city.name.toLowerCase(), city);
+      this.indexSuggestion(`${city.name} ${city.country}`.toLowerCase(), city);
+      if (city.admin1) {
+        this.indexSuggestion(`${city.name} ${city.admin1}`.toLowerCase(), city);
+      }
+    }
+  }
+
+  private indexSuggestion(label: string, city: GeocodingResult): void {
+    const clean = label.trim().toLowerCase();
+    if (!clean) {
+      return;
+    }
+
+    const maxPrefix = Math.min(clean.length, 6);
+    for (let i = 1; i <= maxPrefix; i++) {
+      this.pushIndexedSuggestion(clean.slice(0, i), city);
+    }
+
+    const tokens = clean.split(/\s+/g).filter(Boolean);
+    for (const token of tokens) {
+      const tokenMaxPrefix = Math.min(token.length, 6);
+      for (let i = 1; i <= tokenMaxPrefix; i++) {
+        this.pushIndexedSuggestion(token.slice(0, i), city);
+      }
+    }
+  }
+
+  private pushIndexedSuggestion(key: string, city: GeocodingResult): void {
+    const existing = this.citySuggestionIndex.get(key) || [];
+    const alreadyExists = existing.some((item) =>
+      item.name === city.name && item.country === city.country && (item.admin1 || '') === (city.admin1 || '')
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    const next = [...existing, city].slice(0, 30);
+    this.citySuggestionIndex.set(key, next);
   }
 
   private getLocalCities(query: string): GeocodingResult[] {
@@ -313,7 +431,8 @@ export class WeatherService {
       daily: 'weather_code,temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,wind_speed_10m_max,precipitation_probability_max,sunrise,sunset',
       current: 'temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,apparent_temperature,precipitation',
       timezone: 'auto',
-      forecast_days: '14'
+      forecast_days: '14',
+      temperature_unit: 'celsius'
     };
 
     const params = new HttpParams({ fromObject: paramsObj });
@@ -325,7 +444,8 @@ export class WeatherService {
       daily: 'temperature_2m_max,temperature_2m_min',
       current: 'temperature_2m,weather_code',
       timezone: 'auto',
-      forecast_days: '7'
+      forecast_days: '7',
+      temperature_unit: 'celsius'
     } });
 
     return this.http.get<any>(this.weatherApiUrl, { params }).pipe(
@@ -431,45 +551,129 @@ export class WeatherService {
     );
   }
 
-  searchWeather(cityName: string): void {
-    if (!cityName.trim()) {
+  async searchWeather(cityName: string): Promise<void> {
+    const normalizedQuery = cityName.trim().toLowerCase();
+    if (!normalizedQuery) {
       this.error.set('Please enter a city name to continue.');
       return;
     }
 
+    const currentLocation = (this.currentWeather()?.location || '').toLowerCase();
+    if (currentLocation.startsWith(normalizedQuery + ',') || currentLocation === normalizedQuery) {
+      this.error.set(null);
+      this.isLoading.set(false);
+      return;
+    }
+
+    const existingSearch = this.inFlightWeatherSearches.get(normalizedQuery);
+    if (existingSearch) {
+      await existingSearch;
+      return;
+    }
+
+    const searchPromise = this.searchWeatherInternal(cityName.trim(), normalizedQuery);
+    this.inFlightWeatherSearches.set(normalizedQuery, searchPromise);
+
+    try {
+      await searchPromise;
+    } finally {
+      this.inFlightWeatherSearches.delete(normalizedQuery);
+    }
+  }
+
+  async searchWeatherBySelection(selection: GeocodingResult): Promise<void> {
+    if (!selection?.name || !Number.isFinite(selection.latitude) || !Number.isFinite(selection.longitude)) {
+      this.error.set('Please select a valid city.');
+      return;
+    }
+
+    const cityKey = `${selection.name}, ${selection.country}`.trim().toLowerCase();
+    const existingSearch = this.inFlightWeatherSearches.get(cityKey);
+    if (existingSearch) {
+      await existingSearch;
+      return;
+    }
+
+    const current = this.currentWeather();
+    if (current && Number.isFinite(current.latitude) && Number.isFinite(current.longitude)) {
+      const sameLat = Math.abs((current.latitude || 0) - selection.latitude) < 0.001;
+      const sameLon = Math.abs((current.longitude || 0) - selection.longitude) < 0.001;
+      if (sameLat && sameLon) {
+        this.error.set(null);
+        this.isLoading.set(false);
+        return;
+      }
+    }
+
+    const searchPromise = this.searchWeatherFromCoordinates(selection.latitude, selection.longitude, `${selection.name}, ${selection.country}`);
+    this.inFlightWeatherSearches.set(cityKey, searchPromise);
+
+    try {
+      await searchPromise;
+    } finally {
+      this.inFlightWeatherSearches.delete(cityKey);
+    }
+  }
+
+  private async searchWeatherInternal(cityName: string, normalizedQuery: string): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.searchCity(cityName).subscribe({
-      next: (results) => {
-        if (results.length === 0) {
-          this.error.set('City not found. Please try another search.');
-          this.isLoading.set(false);
-          return;
-        }
+    try {
+      const results = await firstValueFrom(this.searchCity(cityName));
 
-        const city = results[0];
-        const locationName = `${city.name}, ${city.country}`;
-
-        this.getWeather(city.latitude, city.longitude, locationName).subscribe({
-          next: (weatherData) => {
-            this.currentWeather.set(weatherData);
-            this.isLoading.set(false);
-            this.initialized.set(true);
-          },
-            error: (err) => {
-              console.error('Weather fetch error (subscribe):', err);
-              this.error.set('Weather service is temporarily unavailable. Please try again in a moment.');
-              this.isLoading.set(false);
-            }
-        });
-      },
-      error: (err) => {
-        console.error('searchCity error:', err);
-        this.error.set('Failed to search city. Please try again.');
-        this.isLoading.set(false);
+      if (!results || results.length === 0) {
+        this.error.set('City not found. Please try another search.');
+        return;
       }
-    });
+
+      const bestMatch = results.find((result) => result.name.toLowerCase() === normalizedQuery) || results[0];
+      const locationName = `${bestMatch.name}, ${bestMatch.country}`;
+      const cached = this.readWeatherFromMemoryCache(bestMatch.latitude, bestMatch.longitude);
+      if (cached) {
+        this.currentWeather.set(cached);
+        this.initialized.set(true);
+        this.error.set(null);
+        return;
+      }
+
+      const weatherData = await firstValueFrom(this.getWeather(bestMatch.latitude, bestMatch.longitude, locationName));
+      this.writeWeatherToMemoryCache(bestMatch.latitude, bestMatch.longitude, weatherData);
+      this.currentWeather.set(weatherData);
+      this.initialized.set(true);
+      this.error.set(null);
+    } catch (err) {
+      console.error('searchWeather error:', err);
+      this.error.set('Weather service is temporarily unavailable. Please try again in a moment.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private async searchWeatherFromCoordinates(latitude: number, longitude: number, locationName: string): Promise<void> {
+    this.isLoading.set(true);
+    this.error.set(null);
+
+    try {
+      const cached = this.readWeatherFromMemoryCache(latitude, longitude);
+      if (cached) {
+        this.currentWeather.set(cached);
+        this.initialized.set(true);
+        this.error.set(null);
+        return;
+      }
+
+      const weatherData = await firstValueFrom(this.getWeather(latitude, longitude, locationName));
+      this.writeWeatherToMemoryCache(latitude, longitude, weatherData);
+      this.currentWeather.set(weatherData);
+      this.initialized.set(true);
+      this.error.set(null);
+    } catch (err) {
+      console.error('searchWeatherBySelection error:', err);
+      this.error.set('Weather service is temporarily unavailable. Please try again in a moment.');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   clearWeather(): void {
@@ -485,38 +689,281 @@ export class WeatherService {
     this.isLoading.set(true);
     this.error.set(null);
 
+    // Check if we have a cached user location
+    const cachedLocation = this.getCachedUserLocation();
+    if (cachedLocation) {
+      console.log('📍 Using cached location:', cachedLocation.name, 'Lat:', cachedLocation.latitude, 'Lon:', cachedLocation.longitude);
+      // Load weather for cached location
+      this.getWeather(cachedLocation.latitude, cachedLocation.longitude, cachedLocation.name).subscribe({
+        next: (weatherData) => {
+          this.currentWeather.set(weatherData);
+          this.isLoading.set(false);
+          this.initialized.set(true);
+        },
+        error: () => {
+          // If cached location fails, try fresh geolocation
+          this.detectUserLocationViaIP();
+        }
+      });
+      return;
+    }
+
+    // No cache, detect via IP first (more reliable for actual city)
+    console.log('🔍 No cached location found. Starting fresh geolocation detection...');
+    this.detectUserLocationViaIP();
+  }
+
+  private detectUserLocationViaIP(): void {
+    // Use IP-based geolocation as primary - it's more reliable for determining actual city
+    this.http.get<any>('https://ipapi.co/json/')
+      .subscribe({
+        next: (ipData) => {
+          const ipCity = ipData.city?.toLowerCase().trim();
+          const ipCountry = ipData.country_name || ipData.country;
+          console.log('🌐 IP API returned - City:', ipData.city, 'Country:', ipCountry);
+          
+          // Find matching city from curated list (case-insensitive)
+          const matchedCity = this.curatedCities.find(
+            city => city.name.toLowerCase() === ipCity
+          );
+
+          if (matchedCity) {
+            console.log('✅ Matched city from IP:', matchedCity.name, '| Lat:', matchedCity.latitude, 'Lon:', matchedCity.longitude);
+            this.cacheUserLocation(matchedCity);
+            
+            this.getWeather(matchedCity.latitude, matchedCity.longitude, matchedCity.name).subscribe({
+              next: (weatherData) => {
+                console.log('✅ Weather loaded for:', weatherData.location);
+                this.currentWeather.set(weatherData);
+                this.isLoading.set(false);
+                this.initialized.set(true);
+              },
+              error: () => {
+                console.error('Weather fetch failed for IP city, trying GPS...');
+                this.detectUserLocationViaGPS();
+              }
+            });
+          } else {
+            console.log('❌ IP city "' + ipData.city + '" not in curated list. Available cities:', this.curatedCities.map(c => c.name).join(', '));
+            console.log('Falling back to GPS...');
+            // IP gave us a city not in our list, fall back to GPS
+            this.detectUserLocationViaGPS();
+          }
+        },
+        error: (err) => {
+          console.log('IP geolocation failed:', err.message, '- trying GPS...');
+          this.detectUserLocationViaGPS();
+        }
+      });
+  }
+
+  private detectUserLocationViaGPS(): void {
+    // Fallback to GPS-based detection only if IP fails
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       const geoOptions: PositionOptions = {
-        enableHighAccuracy: false,
-        timeout: 4000,
-        maximumAge: 300000
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 0
       };
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-
-          this.getWeather(lat, lon, 'Current Location').subscribe({
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+          
+          console.log('📍 GPS detected - Lat:', userLat, 'Lon:', userLon);
+          
+          // Find closest city from curated list
+          const closestCity = this.findClosestCity(userLat, userLon);
+          const distance = this.calculateDistance(userLat, userLon, closestCity.latitude, closestCity.longitude);
+          console.log('✅ Closest city from GPS:', closestCity.name, '| Distance:', distance.toFixed(2) + ' km');
+          
+          // Cache the detected location
+          this.cacheUserLocation(closestCity);
+          
+          this.getWeather(closestCity.latitude, closestCity.longitude, closestCity.name).subscribe({
             next: (weatherData) => {
+              console.log('Weather loaded for:', weatherData.location);
               this.currentWeather.set(weatherData);
               this.isLoading.set(false);
               this.initialized.set(true);
             },
             error: () => {
-              this.getIPBasedLocationWeather();
+              console.error('Weather fetch failed for GPS city');
+              this.loadFallbackCity();
             }
           });
         },
         (error) => {
-          console.log('Browser geolocation failed, trying IP-based location...');
-          this.getIPBasedLocationWeather();
+          console.log('GPS geolocation failed:', error.message);
+          this.loadFallbackCity();
         },
         geoOptions
       );
     } else {
-      this.getIPBasedLocationWeather();
+      console.log('GPS not available');
+      this.loadFallbackCity();
     }
+  }
+
+  private loadFallbackCity(): void {
+    // Use Kishangarh as fallback (not Jaipur)
+    const fallbackCity = this.curatedCities.find(city => city.name === this.fallbackCity) || this.curatedCities[2]; // Kishangarh
+    console.log('⚠️ Loading fallback city:', fallbackCity.name, 'Lat:', fallbackCity.latitude, 'Lon:', fallbackCity.longitude);
+    this.cacheUserLocation(fallbackCity);
+    
+    this.getWeather(fallbackCity.latitude, fallbackCity.longitude, fallbackCity.name).subscribe({
+      next: (weatherData) => {
+        console.log('✅ Weather loaded for fallback city:', weatherData.location);
+        this.currentWeather.set(weatherData);
+        this.isLoading.set(false);
+        this.initialized.set(true);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.error.set('Failed to load location weather');
+      }
+    });
+  }
+
+  private getCachedUserLocation(): GeocodingResult | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    try {
+      const cached = localStorage.getItem(this.userLocationCacheKey);
+      if (!cached) {
+        return null;
+      }
+
+      const { data, timestamp } = JSON.parse(cached);
+      const age = Date.now() - timestamp;
+
+      // Check if cache is still valid (7 days)
+      if (age > this.userLocationCacheTtlMs) {
+        localStorage.removeItem(this.userLocationCacheKey);
+        return null;
+      }
+
+      return data as GeocodingResult;
+    } catch (error) {
+      console.error('Error reading cached user location:', error);
+      return null;
+    }
+  }
+
+  private cacheUserLocation(city: GeocodingResult): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      const cacheData = {
+        data: city,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(this.userLocationCacheKey, JSON.stringify(cacheData));
+    } catch (error) {
+      console.error('Error caching user location:', error);
+    }
+  }
+
+  refreshUserLocation(): void {
+    // Clear the cached location to force re-detection on next request
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem(this.userLocationCacheKey);
+      } catch (error) {
+        console.error('Error clearing cached user location:', error);
+      }
+    }
+    // Detect location again
+    this.getUserLocationWeather();
+  }
+
+  setPreferredCity(cityName: string): void {
+    const city = this.curatedCities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+    if (city) {
+      // Save as preferred city
+      try {
+        localStorage.setItem(this.preferredCityKey, city.name);
+        console.log('💾 Saved preferred city:', city.name);
+      } catch (error) {
+        console.error('Error saving preferred city:', error);
+      }
+
+      // Cache this as the user's preferred location
+      this.cacheUserLocation(city);
+      // Load weather for this city
+      this.getWeather(city.latitude, city.longitude, city.name).subscribe({
+        next: (weatherData) => {
+          this.currentWeather.set(weatherData);
+          this.isLoading.set(false);
+          this.initialized.set(true);
+        },
+        error: (err) => {
+          this.error.set('Failed to load weather for ' + cityName);
+          this.isLoading.set(false);
+        }
+      });
+    } else {
+      this.error.set('City not found: ' + cityName);
+    }
+  }
+
+  private findClosestCity(userLat: number, userLon: number): GeocodingResult {
+    let closestCity = this.curatedCities[0];
+    let minDistance = this.calculateDistance(userLat, userLon, closestCity.latitude, closestCity.longitude);
+    const distanceLog: string[] = [`${closestCity.name}: ${minDistance.toFixed(2)} km`];
+
+    for (let i = 1; i < this.curatedCities.length; i++) {
+      const city = this.curatedCities[i];
+      const distance = this.calculateDistance(userLat, userLon, city.latitude, city.longitude);
+      distanceLog.push(`${city.name}: ${distance.toFixed(2)} km`);
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = city;
+      }
+    }
+
+    console.log('📊 Distance calculation from your GPS coords:', distanceLog.join(' | '));
+    return closestCity;
+  }
+
+  private getPreferredCity(): GeocodingResult | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    try {
+      const preferred = localStorage.getItem(this.preferredCityKey);
+      if (!preferred) {
+        return null;
+      }
+
+      const cityName = preferred;
+      const city = this.curatedCities.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+      console.log('🏠 Retrieved preferred city from storage:', cityName);
+      return city || null;
+    } catch (error) {
+      console.error('Error reading preferred city:', error);
+      return null;
+    }
+  }
+
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
   }
 
   private getIPBasedLocationWeather(): void {
@@ -711,22 +1158,6 @@ export class WeatherService {
     this.initialized.set(true);
   }
 
-
-
-  private reverseGeocode(latitude: number, longitude: number): Observable<string> {
-    const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=en`;
-    return this.http.get<any>(url).pipe(
-      map(response => {
-        if (response.results && response.results.length > 0) {
-          const result = response.results[0];
-          return `${result.name}, ${result.country || ''}`;
-        }
-        return 'Unknown Location';
-      }),
-      catchError(() => of('Unknown Location'))
-    );
-  }
-
   private sanitizeSuggestions(results: GeocodingResult[]): GeocodingResult[] {
     return (results || [])
       .filter((item) => !!item?.name && !!item?.country && Number.isFinite(item?.latitude) && Number.isFinite(item?.longitude))
@@ -737,6 +1168,33 @@ export class WeatherService {
         country: String(item.country).trim(),
         admin1: item.admin1 ? String(item.admin1).trim() : undefined
       }));
+  }
+
+  private buildWeatherCacheKey(latitude: number, longitude: number): string {
+    return `${latitude.toFixed(3)}|${longitude.toFixed(3)}`;
+  }
+
+  private readWeatherFromMemoryCache(latitude: number, longitude: number): WeatherData | null {
+    const key = this.buildWeatherCacheKey(latitude, longitude);
+    const entry = this.weatherResponseCache.get(key);
+    if (!entry) {
+      return null;
+    }
+
+    if (Date.now() - entry.timestamp > this.weatherCacheTtlMs) {
+      this.weatherResponseCache.delete(key);
+      return null;
+    }
+
+    return entry.data;
+  }
+
+  private writeWeatherToMemoryCache(latitude: number, longitude: number, data: WeatherData): void {
+    const key = this.buildWeatherCacheKey(latitude, longitude);
+    this.weatherResponseCache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
   }
 
   isValidWeatherData(data: WeatherData | null | undefined): data is WeatherData {
