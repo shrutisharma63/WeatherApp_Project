@@ -372,8 +372,8 @@ body.dark-theme .menu-icon {
     z-index: 1001;
   }
   
-  /* Show drawer when .open class is applied */
-  .menu.open {
+  /* Show drawer when .expanded class is applied (matches HTML binding) */
+  .menu.expanded {
     transform: translateX(0);
   }
   
