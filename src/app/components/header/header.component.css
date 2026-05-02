@@ -113,46 +113,68 @@
 }
 
 @media (max-width: 768px) {
+  .header {
+    padding: 0.5rem;
+  }
+  
   .header h1 {
     font-size: 1rem;
   }
+  
   .logo {
     width: 40px;
     height: 40px;
     margin: 0 8px;
   }
-  .icon {
-    font-size: 1.3rem;
-    margin-right: 6px;
-  }
-  .theme-icon {
+  
+  /* Make hamburger touch-friendly */
+  .icon,
+  .hamburger {
     font-size: 1.5rem;
-    margin-right: 15px;
+    padding: 10px;
+    margin-right: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .header {
-    padding: 0.5rem;
+  
+  .theme-icon {
+    font-size: 1.6rem;
+    margin-right: 12px;
+    padding: 10px;
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 
 @media (max-width: 480px) {
+  .header {
+    padding: 0.4rem 0.5rem;
+  }
+  
   .header h1 {
     display: none;
   }
+  
   .logo {
     width: 36px;
     height: 36px;
     margin: 0 6px;
     padding: 4px;
   }
-  .icon {
-    font-size: 1.2rem;
-    margin-right: 4px;
-  }
-  .theme-icon {
+  
+  .icon,
+  .hamburger {
     font-size: 1.3rem;
-    margin-right: 10px;
+    margin-right: 4px;
+    padding: 8px;
   }
-  .header {
-    padding: 0.4rem 0.5rem;
+  
+  .theme-icon {
+    font-size: 1.4rem;
+    margin-right: 8px;
+    padding: 8px;
   }
 }

@@ -164,6 +164,15 @@ body::before {
     --topbar-height: 56px;
     --sidebar-width: 0px;
   }
+  
+  /* Main content takes full width on mobile when sidebar is hidden */
+  .main-content {
+    margin-left: 0 !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 /* Mobile phones (480px and below) */
@@ -184,6 +193,29 @@ body::before {
   
   button, input, select, textarea {
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Tighter spacing on small mobile */
+  .main-content {
+    padding: 8px !important;
+  }
+}
+
+/* Touch-friendly button sizing for mobile */
+@media (max-width: 768px) and (pointer: coarse) {
+  button,
+  .btn,
+  .search-btn,
+  .location-btn,
+  .clear-btn,
+  .menu-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Ensure adequate touch targets */
+  .icon-button {
+    padding: 12px;
   }
 }
 
