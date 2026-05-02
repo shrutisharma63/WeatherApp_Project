@@ -114,7 +114,23 @@
 
 @media (max-width: 768px) {
   .header h1 {
-    font-size: 1.2rem;
+    font-size: 1rem;
+  }
+  .logo {
+    width: 40px;
+    height: 40px;
+    margin: 0 8px;
+  }
+  .icon {
+    font-size: 1.3rem;
+    margin-right: 6px;
+  }
+  .theme-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
+  }
+  .header {
+    padding: 0.5rem;
   }
 }
 
@@ -123,9 +139,20 @@
     display: none;
   }
   .logo {
-    margin: 0 5px;
+    width: 36px;
+    height: 36px;
+    margin: 0 6px;
+    padding: 4px;
+  }
+  .icon {
+    font-size: 1.2rem;
+    margin-right: 4px;
+  }
+  .theme-icon {
+    font-size: 1.3rem;
+    margin-right: 10px;
   }
   .header {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.5rem;
   }
 }

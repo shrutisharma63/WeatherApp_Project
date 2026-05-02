@@ -359,30 +359,38 @@ body.dark-theme .menu-icon {
   .menu {
     top: 64px;
     height: calc(100vh - 64px);
-    width: 100%;
-    max-width: 300px;
-    padding: 20px 10px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    padding: 10px 6px;
   }
   
   .menu-item {
-    padding: 12px 14px;
-    font-size: 14px;
+    padding: 8px 8px;
+    font-size: 11px;
+    justify-content: center;
   }
   
   .menu-item .material-icons {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    margin-right: 0;
+  }
+  
+  .menu-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
   
   .sidebar-map {
-    width: 100%;
-    max-width: 300px;
-    bottom: 20px;
+    display: none;
   }
   
-  .sidebar-map-wrap {
-    height: 120px;
+  /* Hide text labels on mobile */
+  .menu-item span:last-child {
+    display: none;
   }
 }
 
@@ -394,30 +402,26 @@ body.dark-theme .menu-icon {
 
 @media (max-width: 480px) {
   .menu {
-    width: 85%;
-    max-width: none;
-    padding: 16px 8px;
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    padding: 8px 4px;
   }
   
   .menu-item {
-    padding: 10px 12px;
-    font-size: 13px;
-    gap: 10px;
+    padding: 6px 6px;
+    font-size: 10px;
   }
   
   .menu-item .material-icons {
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
-  }
-  
-  .menu-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     font-size: 14px;
   }
   
-  .sidebar-map {
-    display: none;
+  .menu-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
   }
 }
