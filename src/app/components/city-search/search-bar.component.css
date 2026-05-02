@@ -5,12 +5,43 @@
   padding: 0.25rem 0.75rem;
 }
 
+@media (max-width: 768px) {
+  .weather-top-shell {
+    margin: 0 auto 1rem auto;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .weather-top-shell {
+    margin: 0 auto 0.75rem auto;
+    padding: 0.25rem 0.35rem;
+  }
+}
+
 .city-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
   margin-bottom: 14px;
+}
+
+@media (max-width: 768px) {
+  .city-tabs {
+    gap: 8px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .city-tabs {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
 }
 
 .city-tab {
@@ -27,6 +58,22 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
 }
+
+@media (max-width: 768px) {
+  .city-tab {
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .city-tab {
+    padding: 5px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+  }\n}
 
 .city-tab:hover {
   transform: translateY(-1px);
@@ -63,6 +110,22 @@
   z-index: 10;
 }
 
+@media (max-width: 768px) {
+  .search-wrap {
+    width: 100%;
+    padding: 0 0.5rem;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-wrap {
+    width: 100%;
+    padding: 0 0.35rem;
+    margin-bottom: 8px;
+  }
+}
+
 .search-bar {
   width: 100%;
   position: relative;
@@ -80,6 +143,20 @@
   cursor: text;
 }
 
+@media (max-width: 768px) {
+  .search-bar {
+    padding: 6px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    padding: 5px;
+    gap: 5px;
+  }
+}
+
 .search-bar input {
   flex: 1;
   min-width: 0;
@@ -93,6 +170,20 @@
   padding: 10px 12px 10px 22px;
   pointer-events: auto;
   cursor: text;
+}
+
+@media (max-width: 768px) {
+  .search-bar input {
+    font-size: 0.95rem;
+    padding: 8px 10px 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar input {
+    font-size: 0.85rem;
+    padding: 6px 8px 6px 12px;
+  }
 }
 
 .search-bar input::placeholder {
@@ -112,6 +203,32 @@
   font-size: 0.95rem;
   padding: 10px 12px;
   transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .location-btn,
+  .clear-btn,
+  .search-btn {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+
+  .search-btn {
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .location-btn,
+  .clear-btn,
+  .search-btn {
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+
+  .search-btn {
+    min-width: 60px;
+  }
 }
 
 .clear-btn,

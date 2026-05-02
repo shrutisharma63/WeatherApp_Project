@@ -14,6 +14,24 @@
   min-height: 500px;
 }
 
+@media (max-width: 768px) {
+  .dynamic-weather-container {
+    max-width: 100%;
+    padding: 24px 16px;
+    border-radius: 20px;
+    min-height: auto;
+    margin: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dynamic-weather-container {
+    padding: 16px 12px;
+    border-radius: 16px;
+    margin: 0 0.35rem;
+  }
+}
+
 /* Hourly Forecast Section */
 .hourly-section {
   margin-bottom: 40px;
@@ -26,6 +44,20 @@
   scrollbar-width: none;
   padding: 20px 0;
   -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .hourly-scroll {
+    gap: 14px;
+    padding: 14px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hourly-scroll {
+    gap: 10px;
+    padding: 10px 0;
+  }
 }
 
 .hourly-scroll::-webkit-scrollbar {
@@ -46,6 +78,22 @@
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .hourly-item {
+    min-width: 80px;
+    padding: 16px 12px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hourly-item {
+    min-width: 65px;
+    padding: 12px 8px;
+    border-radius: 14px;
+  }
 }
 
 .hourly-item:hover {

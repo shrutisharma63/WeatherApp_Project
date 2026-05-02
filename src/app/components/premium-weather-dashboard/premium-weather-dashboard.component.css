@@ -12,6 +12,24 @@
   min-height: 600px;
 }
 
+@media (max-width: 768px) {
+  .premium-dashboard {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    min-height: auto;
+    margin: 0 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .premium-dashboard {
+    padding: 16px;
+    border-radius: 16px;
+    margin: 0 0.35rem;
+  }
+}
+
 /* Header */
 .dashboard-header {
   margin-bottom: 40px;
@@ -28,12 +46,41 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+@media (max-width: 768px) {
+  .current-weather-card {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-weather-card {
+    padding: 16px;
+    border-radius: 14px;
+    gap: 16px;
+  }
+}
+
 .current-location h1 {
   font-size: 2.5rem;
   font-weight: 700;
   color: white;
   margin: 0 0 8px 0;
   letter-spacing: -0.02em;
+}
+
+@media (max-width: 768px) {
+  .current-location h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-location h1 {
+    font-size: 1.4rem;
+  }
 }
 
 .current-time {
@@ -52,12 +99,38 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
 }
 
+@media (max-width: 768px) {
+  .current-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-icon {
+    font-size: 2.5rem;
+    margin-bottom: 6px;
+  }
+}
+
 .current-temp {
   font-size: 3.5rem;
   font-weight: 800;
   color: white;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   letter-spacing: -0.03em;
+}
+
+@media (max-width: 768px) {
+  .current-temp {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .current-temp {
+    font-size: 2rem;
+  }
 }
 
 .current-description {

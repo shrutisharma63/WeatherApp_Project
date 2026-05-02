@@ -146,3 +146,55 @@ body::before {
     opacity: 0.4;
   }
 }
+
+/* ======================== MOBILE RESPONSIVE STYLES ======================== */
+
+/* Tablet and smaller laptops (768px and below) */
+@media (max-width: 768px) {
+  html, body, app-root {
+    font-size: 14px;
+  }
+  
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+  h4 { font-size: 1rem; }
+  
+  :root {
+    --topbar-height: 56px;
+    --sidebar-width: 0px;
+  }
+}
+
+/* Mobile phones (480px and below) */
+@media (max-width: 480px) {
+  html, body, app-root {
+    font-size: 13px;
+  }
+  
+  h1 { font-size: 1.3rem; }
+  h2 { font-size: 1.1rem; }
+  h3 { font-size: 1rem; }
+  h4 { font-size: 0.95rem; }
+  
+  :root {
+    --topbar-height: 48px;
+    --sidebar-width: 0px;
+  }
+  
+  button, input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Landscape mode adjustments */
+@media (max-height: 600px) {
+  .modern-weather-card {
+    padding: 16px !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .hourly-forecast {
+    margin-bottom: 1rem !important;
+  }
+}
